@@ -1,0 +1,93 @@
+:root[data-theme='light'] {
+  /* Light theme: bright navy/indigo base (not plain white). */
+  --sl-color-accent: #2b63c6;
+  --sl-color-accent-high: #0d2f6b;
+  --sl-color-accent-low: #cfe0ff;
+
+  --sl-color-text: #071a3a;
+  --sl-color-bg: #edf2ff;
+  --sl-color-bg-nav: #e3ecff;
+  --sl-color-bg-sidebar: #f2f6ff;
+  --sl-color-bg-inline-code: #dde8ff;
+  --sl-color-hairline: #c4d3f3;
+  --sl-color-hairline-light: #d6e0f7;
+  --sl-color-text-accent: var(--sl-color-accent-high);
+  --sl-color-text-invert: #ffffff;
+  --sl-color-bg-accent: var(--sl-color-accent-low);
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent: #7aa7ff;
+  --sl-color-accent-high: #cfe0ff;
+  --sl-color-accent-low: #142c57;
+
+  --sl-color-text: #e8eefc;
+  --sl-color-bg: #071225;
+  --sl-color-bg-nav: #081730;
+  --sl-color-bg-sidebar: #081730;
+  --sl-color-bg-inline-code: #0f2347;
+  --sl-color-hairline: #0b1f40;
+  --sl-color-hairline-light: #0f2a56;
+  --sl-color-text-accent: var(--sl-color-accent-high);
+  --sl-color-text-invert: #071225;
+  --sl-color-bg-accent: var(--sl-color-accent-low);
+}
+
+.sl-link-button.primary,
+.sl-link-button.is-primary {
+  background-color: var(--sl-color-accent) !important;
+  border-color: var(--sl-color-accent) !important;
+  color: var(--sl-color-text-invert) !important;
+}
+
+.sl-link-button.not-content.primary,
+.sl-link-button.not-content.is-primary {
+  background-color: var(--sl-color-accent) !important;
+  border-color: var(--sl-color-accent) !important;
+  color: var(--sl-color-text-invert) !important;
+}
+
+.sl-link-button.primary:hover,
+.sl-link-button.not-content.primary:hover {
+  background-color: var(--sl-color-accent-high) !important;
+  border-color: var(--sl-color-accent-high) !important;
+}
+
+@media screen and (max-width: 600px) {
+  .copy {
+    gap: 0;
+  }
+
+  .hero {
+    height: 50vh;
+    padding: 1.5rem;
+    background-position: calc(50% + 18px) center;
+  }
+
+  .hero h1 {
+    font-size: 2.3rem;
+    margin-bottom: 0;
+  }
+
+  .hero .tagline {
+    font-size: 0.95rem;
+    margin-bottom: 0;
+  }
+}
+
+.hero .copy {
+  align-items: baseline;
+}
+
+.keyspec-badge {
+  display: block;
+  max-width: 400px;
+  width: 100%;
+  height: auto;
+  margin: 2rem auto;
+}
+
+th,
+td {
+  padding: 0.5rem 1rem !important;
+}
