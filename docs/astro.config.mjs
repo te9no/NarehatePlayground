@@ -8,7 +8,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
 	// This repo is a GitHub *user/organization* Pages site (repo name ends with `.github.io`),
 	// so it’s served from the domain root, not a subpath.
-	site: 'https://NarehatePlayground.github.io',
+	site: 'https://te9no.github.io/NarehatePlayground.github.io/',
 	base: '/',
 	integrations: [
 		starlight({
@@ -51,7 +51,7 @@ export default defineConfig({
 					tag: 'meta',
 					attrs: {
 						property: 'og:image',
-						content: 'https://NarehatePlayground.github.io/_astro/Polaris.jpg',
+						content: 'https://te9no.github.io/NarehatePlayground.github.io/_astro/Polaris.jpg',
 					},
 				},
 				{
@@ -72,7 +72,7 @@ export default defineConfig({
 					tag: 'meta',
 					attrs: {
 						name: 'twitter:image',
-						content: 'https://NarehatePlayground.github.io/_astro/Polaris.jpg',
+						content: 'https://te9no.github.io/NarehatePlayground.github.io/_astro/Polaris.jpg',
 					},
 				},
 			],
