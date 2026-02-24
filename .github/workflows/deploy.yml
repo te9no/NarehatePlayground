@@ -20,6 +20,9 @@ jobs:
         uses: withastro/action@v5
         with:
           path: docs
+        env:
+          PUBLIC_SITE: https://te9no.github.io
+          PUBLIC_BASE: /NarehatePlayground
 
   deploy:
     needs: build

@@ -4,12 +4,23 @@ import starlight from '@astrojs/starlight';
 import starlightThemeRapide from 'starlight-theme-rapide'
 import tailwindcss from '@tailwindcss/vite';
 
+function normalizeBase(input) {
+	if (!input) return '/';
+	if (input === '/') return '/';
+	const withLeadingSlash = input.startsWith('/') ? input : `/${input}`;
+	return withLeadingSlash.endsWith('/') ? withLeadingSlash.slice(0, -1) : withLeadingSlash;
+}
+
+const SITE = process.env.PUBLIC_SITE ?? 'https://te9no.github.io';
+const BASE = normalizeBase(process.env.PUBLIC_BASE ?? '/NarehatePlayground');
+const withBase = (pathname) => (BASE === '/' ? pathname : `${BASE}${pathname}`);
+const socialImageUrl = new URL(withBase('/Polaris.jpg'), SITE).toString();
+
 // https://astro.build/config
 export default defineConfig({
-	// This repo is a GitHub *user/organization* Pages site (repo name ends with `.github.io`),
-	// so it’s served from the domain root, not a subpath.
-	site: 'https://te9no.github.io/NarehatePlayground.github.io/',
-	base: '/',
+	// `site` should be an origin (no path). Use `base` for GitHub Pages subpaths.
+	site: SITE,
+	base: BASE,
 	integrations: [
 		starlight({
 			plugins: [
@@ -36,7 +47,7 @@ export default defineConfig({
 					tag: 'link',
 					attrs: {
 						rel: 'icon',
-						href: 'favicon.png',
+						href: withBase('/favicon.png'),
 						type: 'image/png',
 					},
 				},
@@ -44,21 +55,21 @@ export default defineConfig({
 					tag: 'link',
 					attrs: {
 						rel: 'apple-touch-icon',
-						href: 'favicon.png',
+						href: withBase('/favicon.png'),
 					},
 				},
 				{
 					tag: 'meta',
 					attrs: {
 						property: 'og:image',
-						content: 'https://te9no.github.io/NarehatePlayground.github.io/_astro/Polaris.jpg',
+						content: socialImageUrl,
 					},
 				},
 				{
 					tag: 'meta',
 					attrs: {
 						name: 'twitter:title',
-						content: 'MeKaBu',
+						content: 'なれはてぷれいぐらんど',
 					},
 				},
 				{
@@ -72,7 +83,7 @@ export default defineConfig({
 					tag: 'meta',
 					attrs: {
 						name: 'twitter:image',
-						content: 'https://te9no.github.io/NarehatePlayground.github.io/_astro/Polaris.jpg',
+						content: socialImageUrl,
 					},
 				},
 			],
