@@ -1,0 +1,570 @@
+﻿---
+const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
+const guideModules = import.meta.glob('../content/docs/guides/*.{md,mdx}', { eager: true });
+
+const guideCards = Object.entries(guideModules)
+  .map(([file, module], index) => {
+    const filename = file.split('/').pop() ?? '';
+    const slug = filename.replace(/\.(md|mdx)$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
+    const title = module.frontmatter?.title || filename.replace(/\.(md|mdx)$/, '');
+    return { href: `guides/${slug}/`, title, index: String(index + 1).padStart(2, '0') };
+  })
+  .sort((a, b) => a.href.localeCompare(b.href));
+---
+
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Custom keyboard build guides and hardware experiments." />
+    <title>Narehate Playground</title>
+    <link rel="icon" href={`${base}favicon.png`} type="image/png" />
+    <style define:vars={{ heroImage: `url('${base}Polaris.jpg')` }}>
+      :root {
+        color-scheme: dark;
+        --bg: #03040a;
+        --ink: #f8fbff;
+        --muted: rgba(248, 251, 255, 0.68);
+        --line: rgba(119, 234, 255, 0.26);
+        --hot: #ff3d71;
+        --cyan: #4de8ff;
+        --acid: #d7ff3f;
+        --gold: #ffbf4d;
+        --panel: rgba(6, 12, 24, 0.66);
+      }
+
+      * { box-sizing: border-box; }
+
+      html {
+        min-height: 100%;
+        background: var(--bg);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+        color: var(--ink);
+        font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", "Noto Sans JP", sans-serif;
+        background:
+          radial-gradient(circle at 15% 10%, rgba(77, 232, 255, 0.24), transparent 28rem),
+          radial-gradient(circle at 88% 18%, rgba(255, 61, 113, 0.2), transparent 26rem),
+          linear-gradient(135deg, #03040a, #07111f 48%, #130711);
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        background:
+          linear-gradient(90deg, rgba(77, 232, 255, 0.055) 1px, transparent 1px),
+          linear-gradient(rgba(77, 232, 255, 0.045) 1px, transparent 1px);
+        background-size: 38px 38px;
+        transform-origin: center;
+        animation: grid-drift 9s linear infinite;
+      }
+
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        pointer-events: none;
+        background: repeating-linear-gradient(0deg, rgba(255,255,255,.045) 0 1px, transparent 1px 5px);
+        mix-blend-mode: overlay;
+        opacity: .42;
+      }
+
+      a { color: inherit; }
+
+      #particle-field {
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        width: 100%;
+        height: 100%;
+        opacity: .72;
+      }
+
+      .noise {
+        position: fixed;
+        inset: -20%;
+        z-index: 19;
+        pointer-events: none;
+        opacity: .08;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.88' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.75'/%3E%3C/svg%3E");
+        animation: noise-jitter .55s steps(2) infinite;
+      }
+
+      .shell {
+        width: min(1480px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 0;
+        backdrop-filter: blur(18px);
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: .75rem;
+        text-decoration: none;
+        font-weight: 900;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+      }
+
+      .brand-mark {
+        width: 2.45rem;
+        aspect-ratio: 1;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        background: conic-gradient(from 0deg, var(--cyan), var(--hot), var(--acid), var(--cyan));
+        box-shadow: 0 0 32px rgba(77, 232, 255, .34);
+        animation: spin 6s linear infinite;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: .6rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .nav-links a,
+      .cta {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: .65rem .9rem;
+        color: var(--ink);
+        background: rgba(3, 7, 14, .54);
+        text-decoration: none;
+        font-size: .82rem;
+        font-weight: 800;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+        transition: transform .18s ease, border-color .18s ease, background .18s ease;
+      }
+
+      .nav-links a:hover,
+      .cta:hover {
+        transform: translateY(-3px);
+        border-color: rgba(215, 255, 63, .75);
+        background: rgba(215, 255, 63, .12);
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, .95fr);
+        gap: clamp(1.2rem, 4vw, 4rem);
+        align-items: center;
+        min-height: calc(100vh - 80px);
+        padding: clamp(2rem, 6vw, 6rem) 0;
+      }
+
+      .kicker {
+        display: inline-flex;
+        width: fit-content;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(77, 232, 255, .38);
+        border-radius: 999px;
+        padding: .55rem .75rem;
+        color: var(--cyan);
+        background: rgba(4, 10, 22, .68);
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: .78rem;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+        animation: flicker 2.4s steps(1) infinite;
+      }
+
+      h1 {
+        position: relative;
+        margin: 0;
+        max-width: 9ch;
+        font-size: clamp(4.6rem, 15vw, 15rem);
+        line-height: .72;
+        letter-spacing: -.13em;
+        text-transform: uppercase;
+        text-shadow: 0 .06em 0 rgba(255, 61, 113, .34), 0 0 56px rgba(77, 232, 255, .48);
+        animation: title-pulse 5s ease-in-out infinite;
+      }
+
+      h1::before,
+      h1::after {
+        content: attr(data-text);
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      h1::before { color: var(--cyan); transform: translateX(.035em); animation: glitch-cyan 3.8s infinite; }
+      h1::after { color: var(--hot); transform: translateX(-.035em); animation: glitch-hot 3.8s infinite; }
+
+      .lead {
+        max-width: 48rem;
+        margin: 1.4rem 0 0;
+        color: var(--muted);
+        font-size: clamp(1rem, 2vw, 1.35rem);
+        line-height: 1.75;
+      }
+
+      .action-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .8rem;
+        margin-top: 2rem;
+      }
+
+      .action {
+        position: relative;
+        min-height: 9.5rem;
+        overflow: hidden;
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(5, 15, 32, .82), rgba(33, 7, 24, .62));
+        text-decoration: none;
+        box-shadow: 0 24px 70px rgba(0,0,0,.28);
+        transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
+        animation: float 5.4s ease-in-out infinite;
+      }
+
+      .action:nth-child(2) { animation-delay: -1.2s; }
+      .action:nth-child(3) { animation-delay: -2.4s; }
+      .action:nth-child(4) { animation-delay: -3.6s; }
+
+      .action::before {
+        content: "";
+        position: absolute;
+        inset: -60% -90%;
+        background: linear-gradient(115deg, transparent 42%, rgba(255,255,255,.48), transparent 58%);
+        transform: translateX(-40%);
+        animation: shine 3.8s ease-in-out infinite;
+      }
+
+      .action:hover {
+        transform: translateY(-12px) rotate(-.8deg) scale(1.02);
+        border-color: rgba(215, 255, 63, .88);
+        box-shadow: 0 32px 90px rgba(77,232,255,.2);
+      }
+
+      .action span {
+        position: relative;
+        display: block;
+        color: var(--cyan);
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: .75rem;
+        letter-spacing: .15em;
+        text-transform: uppercase;
+      }
+
+      .action strong {
+        position: relative;
+        display: block;
+        margin-top: 2.4rem;
+        font-size: clamp(1.35rem, 3vw, 2.2rem);
+        line-height: 1;
+      }
+
+      .visual {
+        position: relative;
+        min-height: min(66vh, 720px);
+        border: 1px solid rgba(255, 255, 255, .16);
+        border-radius: 42px;
+        overflow: hidden;
+        background:
+          linear-gradient(135deg, rgba(3, 4, 10, .2), rgba(3, 4, 10, .78)),
+          var(--heroImage) center / cover;
+        box-shadow: 0 34px 120px rgba(0,0,0,.48), inset 0 0 90px rgba(77,232,255,.14);
+        transform: perspective(900px) rotateY(-6deg) rotateX(2deg);
+        animation: visual-breathe 6s ease-in-out infinite;
+      }
+
+      .visual::before,
+      .visual::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .visual::before {
+        inset: -20%;
+        background:
+          repeating-linear-gradient(90deg, transparent 0 34px, rgba(77,232,255,.12) 35px 36px),
+          linear-gradient(110deg, transparent 28%, rgba(255,255,255,.34) 29%, transparent 31%);
+        animation: sweep 4s linear infinite;
+      }
+
+      .visual::after {
+        width: 64%;
+        aspect-ratio: 1;
+        right: -20%;
+        bottom: -16%;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 191, 77, .46);
+        background: conic-gradient(from 0deg, transparent, rgba(77,232,255,.48), transparent, rgba(255,61,113,.4), transparent);
+        filter: drop-shadow(0 0 44px rgba(77,232,255,.32));
+        animation: spin 8s linear infinite;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .8rem;
+        margin: 1.2rem 0 4rem;
+      }
+
+      .stat {
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 1rem;
+        background: var(--panel);
+        backdrop-filter: blur(18px);
+      }
+
+      .stat b {
+        display: block;
+        color: var(--acid);
+        font-size: clamp(1.8rem, 5vw, 4rem);
+        line-height: .9;
+      }
+
+      .section-title {
+        margin: 0 0 1rem;
+        font-size: clamp(2rem, 7vw, 6rem);
+        line-height: .88;
+        letter-spacing: -.08em;
+        text-transform: uppercase;
+      }
+
+      .guide-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .9rem;
+        padding-bottom: 5rem;
+      }
+
+      .guide {
+        position: relative;
+        overflow: hidden;
+        min-height: 13rem;
+        border: 1px solid var(--line);
+        border-radius: 26px;
+        padding: 1rem;
+        background: rgba(5, 12, 24, .72);
+        text-decoration: none;
+        transition: transform .18s ease, background .18s ease, border-color .18s ease;
+      }
+
+      .guide:hover {
+        transform: translateY(-8px);
+        border-color: rgba(255, 191, 77, .72);
+        background: rgba(15, 28, 52, .84);
+      }
+
+      .guide small {
+        color: var(--hot);
+        font-family: "Cascadia Code", Consolas, monospace;
+      }
+
+      .guide strong {
+        display: block;
+        margin-top: 3rem;
+        font-size: 1.5rem;
+        line-height: 1.1;
+      }
+
+      .cursor-light {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 18;
+        width: 28rem;
+        aspect-ratio: 1;
+        border-radius: 50%;
+        pointer-events: none;
+        background: radial-gradient(circle, rgba(77,232,255,.16), transparent 64%);
+        transform: translate(-50%, -50%);
+        mix-blend-mode: screen;
+      }
+
+      @keyframes grid-drift { to { background-position: 38px 38px; } }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @keyframes noise-jitter { to { transform: translate3d(-4%, 3%, 0); } }
+      @keyframes flicker { 0%, 78%, 82%, 100% { opacity: 1; } 79% { opacity: .35; } }
+      @keyframes title-pulse { 50% { filter: saturate(1.45); transform: translateY(-.025em); } }
+      @keyframes glitch-cyan { 0%, 86%, 94%, 100% { opacity: 0; clip-path: inset(0); } 87% { opacity: .85; clip-path: inset(0 0 68%); } 90% { opacity: .75; clip-path: inset(44% 0 26%); } }
+      @keyframes glitch-hot { 0%, 86%, 94%, 100% { opacity: 0; clip-path: inset(0); } 88% { opacity: .75; clip-path: inset(18% 0 58%); } 91% { opacity: .7; clip-path: inset(72% 0 0); } }
+      @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+      @keyframes shine { 0%, 42% { transform: translateX(-42%); opacity: 0; } 55% { opacity: .75; } 72%, 100% { transform: translateX(42%); opacity: 0; } }
+      @keyframes visual-breathe { 50% { transform: perspective(900px) rotateY(-2deg) rotateX(0deg) translateY(-10px); } }
+      @keyframes sweep { to { transform: translateX(16%) skewX(-8deg); } }
+
+      @media (max-width: 920px) {
+        .hero { grid-template-columns: 1fr; min-height: auto; }
+        .visual { min-height: 56vh; transform: none; }
+        .guide-grid { grid-template-columns: 1fr 1fr; }
+      }
+
+      @media (max-width: 640px) {
+        .shell { width: min(100% - 22px, 1480px); }
+        .nav { align-items: flex-start; }
+        .nav-links { display: none; }
+        .action-grid, .stats, .guide-grid { grid-template-columns: 1fr; }
+        h1 { font-size: clamp(4rem, 24vw, 7.5rem); }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="particle-field" aria-hidden="true"></canvas>
+    <div class="noise" aria-hidden="true"></div>
+    <div class="cursor-light" aria-hidden="true"></div>
+
+    <header class="shell nav">
+      <a class="brand" href={base}><span class="brand-mark"></span><span>Narehate Playground</span></a>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="https://te9no.booth.pm/">Booth</a>
+        <a href="https://note.com/teporz">Note</a>
+        <a href="https://zenn.dev/te9no">Zenn</a>
+        <a href="https://x.com/teporz">X</a>
+      </nav>
+    </header>
+
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <p class="kicker">CUSTOM KEYBOARD / HARDWARE / FIRMWARE</p>
+          <h1 data-text="NAREHATE">NAREHATE</h1>
+          <p class="lead">手組みキーボード、ケース、センサー、ZMKまわりの制作ログを、静かなdocsではなく実験場として見せるトップページ。</p>
+          <div class="action-grid" aria-label="Main links">
+            <a class="action" href="https://te9no.booth.pm/"><span>Booth</span><strong>頒布ページ</strong></a>
+            <a class="action" href="https://note.com/teporz"><span>Note</span><strong>制作ログ</strong></a>
+            <a class="action" href="https://zenn.dev/te9no"><span>Zenn</span><strong>技術メモ</strong></a>
+            <a class="action" href="https://x.com/teporz"><span>X</span><strong>@teporz</strong></a>
+          </div>
+        </div>
+        <div class="visual" aria-label="Geacon Solstice visual panel"></div>
+      </section>
+
+      <section class="stats" aria-label="Site stats">
+        <div class="stat"><b>{guideCards.length}</b><span>Build guides</span></div>
+        <div class="stat"><b>121</b><span>Image assets</span></div>
+        <div class="stat"><b>ZMK</b><span>Firmware notes</span></div>
+      </section>
+
+      <section id="guides">
+        <h2 class="section-title">Build Guides</h2>
+        <div class="guide-grid">
+          {guideCards.map((guide) => (
+            <a class="guide" href={guide.href}>
+              <small>{guide.index}</small>
+              <strong>{guide.title}</strong>
+            </a>
+          ))}
+        </div>
+      </section>
+    </main>
+
+    <script is:inline>
+      const canvas = document.getElementById('particle-field');
+      const ctx = canvas.getContext('2d');
+      const cursor = document.querySelector('.cursor-light');
+      let width = 0;
+      let height = 0;
+      let particles = [];
+      let pointer = { x: 0, y: 0 };
+
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = Math.floor(width * dpr);
+        canvas.height = Math.floor(height * dpr);
+        canvas.style.width = width + 'px';
+        canvas.style.height = height + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        particles = Array.from({ length: Math.min(110, Math.floor(width / 12)) }, () => ({
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * 0.7,
+          vy: (Math.random() - 0.5) * 0.7,
+          r: Math.random() * 1.7 + 0.4,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        for (const p of particles) {
+          const dx = p.x - pointer.x;
+          const dy = p.y - pointer.y;
+          const dist = Math.max(Math.sqrt(dx * dx + dy * dy), 1);
+          if (dist < 150) {
+            p.vx += dx / dist * 0.015;
+            p.vy += dy / dist * 0.015;
+          }
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.985;
+          p.vy *= 0.985;
+          if (p.x < 0 || p.x > width) p.vx *= -1;
+          if (p.y < 0 || p.y > height) p.vy *= -1;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(77, 232, 255, .72)';
+          ctx.fill();
+        }
+        for (let i = 0; i < particles.length; i++) {
+          for (let j = i + 1; j < particles.length; j++) {
+            const a = particles[i];
+            const b = particles[j];
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 110) {
+              ctx.strokeStyle = `rgba(77, 232, 255, ${0.18 * (1 - dist / 110)})`;
+              ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(a.x, a.y);
+              ctx.lineTo(b.x, b.y);
+              ctx.stroke();
+            }
+          }
+        }
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      window.addEventListener('pointermove', (event) => {
+        pointer.x = event.clientX;
+        pointer.y = event.clientY;
+        cursor.style.transform = `translate(${event.clientX - 224}px, ${event.clientY - 224}px)`;
+      });
+      resize();
+      draw();
+    </script>
+  </body>
+</html>
+
+
+
+
+

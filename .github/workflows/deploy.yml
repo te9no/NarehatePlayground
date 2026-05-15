@@ -22,7 +22,7 @@ jobs:
           path: docs
         env:
           PUBLIC_SITE: https://te9no.github.io
-          PUBLIC_BASE: /NarehatePlayground
+          PUBLIC_BASE: /NarehatePlayground.github.io
 
   deploy:
     needs: build
