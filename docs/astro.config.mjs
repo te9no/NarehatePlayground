@@ -10,7 +10,7 @@ function normalizeBase(input) {
 }
 
 const SITE = process.env.PUBLIC_SITE ?? 'https://te9no.github.io';
-const BASE = normalizeBase(process.env.PUBLIC_BASE ?? '/NarehatePlayground.github.io');
+const BASE = normalizeBase(process.env.PUBLIC_BASE ?? '/NarehatePlayground');
 
 export default defineConfig({
 	site: SITE,
