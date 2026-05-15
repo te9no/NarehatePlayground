@@ -201,12 +201,25 @@ const guideCards = Object.entries(guideModules)
         position: relative;
         margin: 0;
         max-width: 100%;
-        font-size: clamp(4.2rem, 9.2vw, 10.8rem);
-        line-height: .72;
+        font-size: clamp(4rem, 8.6vw, 10rem);
+        line-height: .74;
         letter-spacing: -.105em;
         text-transform: uppercase;
         text-shadow: 0 .06em 0 rgba(255, 61, 113, .34), 0 0 56px rgba(77, 232, 255, .48);
         animation: title-pulse 5s ease-in-out infinite;
+      }
+
+      h1 span {
+        display: block;
+      }
+
+      h1 .title-sub {
+        margin-top: .04em;
+        font-size: .48em;
+        letter-spacing: .02em;
+        color: transparent;
+        -webkit-text-stroke: 1px rgba(248, 251, 255, .92);
+        text-shadow: 0 0 34px rgba(77, 232, 255, .5);
       }
 
       h1::before,
@@ -433,7 +446,8 @@ const guideCards = Object.entries(guideModules)
         .nav { align-items: flex-start; }
         .nav-links { display: none; }
         .action-grid, .stats, .guide-grid { grid-template-columns: 1fr; }
-        h1 { font-size: clamp(3.6rem, 21vw, 7.5rem); letter-spacing: -.11em; }
+        h1 { font-size: clamp(3.35rem, 19vw, 7rem); letter-spacing: -.11em; }
+        h1 .title-sub { font-size: .5em; letter-spacing: .015em; }
       }
 
       @media (prefers-reduced-motion: reduce) {
@@ -460,7 +474,8 @@ const guideCards = Object.entries(guideModules)
       <section class="hero">
         <div class="hero-copy">
           <p class="kicker">CUSTOM KEYBOARD / HARDWARE / FIRMWARE</p>
-          <h1 data-text="NAREHATE">NAREHATE</h1>
+          <h1 data-text={`NAREHATE
+PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
           <p class="lead">基板、ケース、センサー、ファームウェアまで。作って、壊して、組み直した痕跡をそのまま並べる制作アーカイブ。</p>
           <div class="action-grid" aria-label="Main links">
             <a class="action" href="https://te9no.booth.pm/"><span>Booth</span><strong>頒布ページ</strong></a>
