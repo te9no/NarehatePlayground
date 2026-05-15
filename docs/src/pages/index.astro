@@ -437,7 +437,12 @@ const guideCards = Object.entries(guideModules)
 
       @media (max-width: 920px) {
         .hero { grid-template-columns: 1fr; min-height: auto; }
-        .visual { min-height: 56vh; transform: none; }
+        .visual {
+          min-height: 0;
+          aspect-ratio: 16 / 10;
+          transform: none;
+          background-position: center;
+        }
         .guide-grid { grid-template-columns: 1fr 1fr; }
       }
 
@@ -448,6 +453,7 @@ const guideCards = Object.entries(guideModules)
         .action-grid, .stats, .guide-grid { grid-template-columns: 1fr; }
         h1 { font-size: clamp(3.35rem, 19vw, 7rem); letter-spacing: -.11em; }
         h1 .title-sub { font-size: .5em; letter-spacing: .015em; }
+        .visual { aspect-ratio: 4 / 3; border-radius: 28px; }
       }
 
       @media (prefers-reduced-motion: reduce) {
