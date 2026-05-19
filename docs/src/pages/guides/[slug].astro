@@ -1,14 +1,15 @@
 ﻿---
 export async function getStaticPaths() {
   const modules = import.meta.glob('../../content/docs/guides/*.{md,mdx}', { eager: true });
-  return Object.entries(modules).map(([file, module]) => {
+  return Promise.all(Object.entries(modules).map(async ([file, module]) => {
     const filename = file.split('/').pop() ?? '';
     const slug = filename.replace(/\.(md|mdx)$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
-    return { params: { slug }, props: { module, filename } };
-  });
+    const headings = typeof module.getHeadings === 'function' ? await module.getHeadings() : [];
+    return { params: { slug }, props: { module, filename, headings: headings.filter((heading) => heading.depth > 1 && heading.depth < 4) } };
+  }));
 }
 
-const { module, filename } = Astro.props;
+const { module, filename, headings } = Astro.props;
 const Content = module.Content;
 const title = module.frontmatter?.title || filename.replace(/\.(md|mdx)$/, '');
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
@@ -24,10 +25,65 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
       :root { color-scheme: dark; --bg:#05070d; --ink:#f6f8ff; --muted:rgba(246,248,255,.68); --line:rgba(77,232,255,.24); --cyan:#4de8ff; --hot:#ff3d71; }
       * { box-sizing: border-box; }
       body { margin: 0; color: var(--ink); font-family: "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif; background: radial-gradient(circle at 20% 0%, rgba(77,232,255,.18), transparent 28rem), var(--bg); }
-      main { width: min(920px, calc(100% - 32px)); margin: 0 auto; padding: 2rem 0 5rem; }
+      .guide-layout {
+        width: min(1360px, calc(100% - 32px));
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: minmax(180px, 260px) minmax(0, 920px);
+        gap: clamp(1rem, 4vw, 3.5rem);
+        align-items: start;
+        padding: 2rem 0 5rem;
+      }
+      main { min-width: 0; }
       a { color: var(--cyan); }
       .back { display: inline-flex; margin-bottom: 2rem; border:1px solid var(--line); border-radius:999px; padding:.6rem .9rem; text-decoration:none; color:var(--ink); }
+      .toc {
+        position: sticky;
+        top: 1rem;
+        max-height: calc(100vh - 2rem);
+        overflow: auto;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        padding: 1rem;
+        background: rgba(3, 8, 18, .72);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 24px 80px rgba(0,0,0,.28);
+      }
+      .toc-title {
+        margin: 0 0 .9rem;
+        color: var(--cyan);
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: .75rem;
+        font-weight: 800;
+        letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+      .toc nav {
+        display: grid;
+        gap: .35rem;
+      }
+      .toc a {
+        display: block;
+        border-left: 2px solid transparent;
+        padding: .35rem .35rem .35rem .65rem;
+        color: var(--muted);
+        text-decoration: none;
+        font-size: .88rem;
+        line-height: 1.35;
+        transition: color .16s ease, border-color .16s ease, background .16s ease;
+      }
+      .toc a:hover,
+      .toc a.is-active {
+        border-color: var(--cyan);
+        color: var(--ink);
+        background: rgba(77, 232, 255, .08);
+      }
+      .toc a[data-depth="3"] {
+        margin-left: .75rem;
+        font-size: .8rem;
+      }
       h1 { font-size: clamp(2.4rem, 8vw, 5.5rem); line-height:.9; letter-spacing:-.06em; }
+      :global(h2), :global(h3) { scroll-margin-top: 1.5rem; }
       :global(img) {
         display: block;
         width: 100%;
@@ -78,7 +134,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
         text-transform: uppercase;
       }
       @media (max-width: 640px) {
-        main { width: min(100% - 20px, 920px); }
+        .guide-layout { width: min(100% - 20px, 920px); }
         :global(img) { border-radius: 16px; }
         .image-dialog {
           width: calc(100vw - 12px);
@@ -90,14 +146,39 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
           border-radius: 18px 18px 0 0;
         }
       }
+      @media (max-width: 900px) {
+        .guide-layout {
+          grid-template-columns: 1fr;
+          gap: 1.25rem;
+        }
+        .toc {
+          position: sticky;
+          top: 0;
+          z-index: 5;
+          max-height: 42vh;
+          border-radius: 0 0 20px 20px;
+        }
+      }
     </style>
   </head>
   <body>
-    <main>
-      <a class="back" href="../../">Back to Playground</a>
-      <h1>{title}</h1>
-      <Content />
-    </main>
+    <div class="guide-layout">
+      {headings.length > 0 && (
+        <aside class="toc" aria-label="Table of contents">
+          <p class="toc-title">Contents</p>
+          <nav>
+            {headings.map((heading) => (
+              <a href={`#${heading.slug}`} data-depth={heading.depth}>{heading.text}</a>
+            ))}
+          </nav>
+        </aside>
+      )}
+      <main>
+        <a class="back" href="../../">Back to Playground</a>
+        <h1>{title}</h1>
+        <Content />
+      </main>
+    </div>
     <dialog class="image-dialog" aria-label="Expanded image">
       <img alt="" />
       <button type="button">Close</button>
@@ -125,6 +206,25 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
       window.addEventListener('keydown', (event) => {
         if (event.key === 'Escape' && dialog?.open) dialog.close();
       });
+
+      const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+      const sections = tocLinks
+        .map((link) => document.getElementById(link.hash.slice(1)))
+        .filter(Boolean);
+
+      if ('IntersectionObserver' in window && sections.length > 0) {
+        const observer = new IntersectionObserver((entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (!visible) return;
+          tocLinks.forEach((link) => {
+            link.classList.toggle('is-active', link.hash === `#${visible.target.id}`);
+          });
+        }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, .4, 1] });
+
+        sections.forEach((section) => observer.observe(section));
+      }
     </script>
   </body>
 </html>
