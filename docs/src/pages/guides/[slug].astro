@@ -50,12 +50,32 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
         box-shadow: 0 24px 80px rgba(0,0,0,.28);
       }
       .toc-title {
-        margin: 0 0 .9rem;
+        margin: 0;
         color: var(--cyan);
         font-family: "Cascadia Code", Consolas, monospace;
         font-size: .75rem;
         font-weight: 800;
         letter-spacing: .16em;
+        text-transform: uppercase;
+      }
+      .toc-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        margin-bottom: .9rem;
+      }
+      .toc-toggle {
+        display: none;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: .35rem .65rem;
+        color: var(--ink);
+        background: rgba(77, 232, 255, .1);
+        font: inherit;
+        font-size: .72rem;
+        font-weight: 800;
+        letter-spacing: .08em;
         text-transform: uppercase;
       }
       .toc nav {
@@ -157,6 +177,21 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
           z-index: 5;
           max-height: 42vh;
           border-radius: 0 0 20px 20px;
+          padding: .75rem;
+        }
+        .toc-head { margin-bottom: 0; }
+        .toc-toggle { display: inline-flex; align-items: center; }
+        .toc nav {
+          max-height: 0;
+          overflow: hidden;
+          opacity: 0;
+          transition: max-height .2s ease, opacity .2s ease, margin-top .2s ease;
+        }
+        .toc.is-open nav {
+          max-height: 32vh;
+          overflow: auto;
+          opacity: 1;
+          margin-top: .75rem;
         }
       }
     </style>
@@ -165,7 +200,10 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
     <div class="guide-layout">
       {headings.length > 0 && (
         <aside class="toc" aria-label="Table of contents">
-          <p class="toc-title">Contents</p>
+          <div class="toc-head">
+            <p class="toc-title">Contents</p>
+            <button class="toc-toggle" type="button" aria-expanded="false">Open</button>
+          </div>
           <nav>
             {headings.map((heading) => (
               <a href={`#${heading.slug}`} data-depth={heading.depth}>{heading.text}</a>
@@ -208,9 +246,26 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
       });
 
       const tocLinks = Array.from(document.querySelectorAll('.toc a'));
+      const toc = document.querySelector('.toc');
+      const tocToggle = document.querySelector('.toc-toggle');
       const sections = tocLinks
         .map((link) => document.getElementById(link.hash.slice(1)))
         .filter(Boolean);
+
+      tocToggle?.addEventListener('click', () => {
+        const isOpen = toc?.classList.toggle('is-open') ?? false;
+        tocToggle.setAttribute('aria-expanded', String(isOpen));
+        tocToggle.textContent = isOpen ? 'Close' : 'Open';
+      });
+
+      tocLinks.forEach((link) => {
+        link.addEventListener('click', () => {
+          if (!window.matchMedia('(max-width: 900px)').matches) return;
+          toc?.classList.remove('is-open');
+          tocToggle?.setAttribute('aria-expanded', 'false');
+          if (tocToggle) tocToggle.textContent = 'Open';
+        });
+      });
 
       if ('IntersectionObserver' in window && sections.length > 0) {
         const observer = new IntersectionObserver((entries) => {
