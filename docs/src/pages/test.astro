@@ -1,15 +1,9 @@
 ---
-import { assemblies, modules, rightModules, catalog, yen } from '../lib/price-simulator.mjs';
+import { assemblies, products, catalog, estimate, yen } from '../lib/price-simulator.mjs';
+import { moduleCatalog } from '../lib/simulator-catalog.mjs';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
-const extras = [
-  { id: 'case', title: 'ケース・印刷部品', quantity: '一式', hint: 'ケースなし構成のみ。印刷材料・外注費などを入力。', link: catalog.caseUrl, linkText: 'ケースデータ' },
-  { id: 'left', title: '左モジュール', quantity: '1個', hint: '選択した組立キットのBOOTH参照価格を自動入力。ハウジング付属。', link: modules[0].url, linkText: 'BOOTHの商品ページ', price: modules[0].price },
-  { id: 'right', title: '右モジュール', quantity: '1個', hint: '選択したモジュールのBOOTH参照価格を自動入力。対応するハウジング・同梱品を確認。', link: rightModules[1].url, linkText: 'BOOTHの商品ページ', price: rightModules[1].price },
-  { id: 'switches', title: 'キースイッチ', quantity: '46個分', hint: 'Kailh Choc V2互換。ソケット46個は本体に付属。' },
-  { id: 'keycaps', title: 'キーキャップ', quantity: '46個分', hint: 'MX型十字ステム対応・17mmピッチ用。' },
-  { id: 'batteries', title: '電池', quantity: '2個分', hint: '単4形Ni-MH充電池、左右各1個。一次電池は不可。' },
-  { id: 'balls', title: '別サイズのボール・追加部品', quantity: '1セット分', hint: '標準20mmボールは上のモジュールに同梱（追加0円）。別サイズへ変更する場合だけ追加費用を入力。手持ち利用時も部品が揃っているか確認。', price: 0 },
-];
+const initial = estimate();
+const extraIds = ['caseData', 'case', 'left', 'right', 'iqsLeft', 'iqsRight', 'switches', 'keycaps', 'sockets', 'batteries', 'balls', 'moduleKeys'];
 ---
 <!doctype html>
 <html lang="ja">
@@ -17,7 +11,7 @@ const extras = [
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="description" content="GeaconPolarisの構成・追加費用・購入リストを確認する価格シミュレータの試作ページ。" />
+    <meta name="description" content="GeaconPolaris・SparAkashaAnanta・MeKaBuの構成・追加費用・購入リストを確認する価格シミュレータ。" />
     <title>価格シミュレータ / TEST — なれはてぷれいぐらうんど</title>
     <link rel="icon" href={`${base}favicon.png`} />
   </head>
@@ -30,19 +24,24 @@ const extras = [
     <main>
       <section class="hero" aria-labelledby="page-title">
         <div>
-          <p class="eyebrow">BUILD YOUR POLARIS</p>
+          <p class="eyebrow">BUILD YOUR KEYBOARD</p>
           <h1 id="page-title">好きな構成を。<br />費用は、見える形に。</h1>
-          <p class="hero-copy">組み方とモジュールを選ぶと、必要な部品・費用・残る作業が<br class="desktop-break" />ひとつに。あなたのGeaconPolarisを組み立ててみましょう。</p>
-          <a class="text-link" href={`${base}guides/20geaconpolaris/`}>製品の購入・ビルドガイド <span aria-hidden="true">↗</span></a>
+          <p class="hero-copy">製品と組み方、モジュールを選ぶと、必要な部品・費用・残る作業が<br class="desktop-break" />ひとつに。あなたの一台を組み立ててみましょう。</p>
+          <a class="text-link" data-guide-link href={`${base}guides/20geaconpolaris/`}>選択した製品の購入・ビルドガイド <span aria-hidden="true">↗</span></a>
         </div>
         <div class="product-visual" aria-hidden="true">
           <div class="orbit"></div>
           <div class="keyboard"><div class="half left-half"><div class="keys">{Array.from({ length: 18 }).map(() => <i></i>)}</div><div class="knob" id="module-visual"></div><div class="thumbs"><i></i><i></i><i></i></div></div><div class="half right-half"><div class="keys">{Array.from({ length: 18 }).map(() => <i></i>)}</div><div class="ball" id="right-module-visual"></div><div class="thumbs"><i></i><i></i><i></i></div></div></div>
-          <p>GEACON POLARIS <span>構成イメージ / 実際の形状とは異なります</span></p>
+          <p><b id="visual-product">GeaconPolaris</b><span>構成イメージ / 実際の形状とは異なります</span></p>
         </div>
       </section>
-      <p class="trial-note"><span>試作版</span> 現在はGeaconPolarisのみ対応。注文・決済は行いません。価格・在庫は自動更新されません。</p>
+      <p class="trial-note"><span>試作版</span> 3製品に対応。注文・決済は行いません。価格・在庫は自動更新されません。</p>
       <noscript><p class="error">このシミュレータの計算にはJavaScriptが必要です。購入条件はビルドガイドで確認できます。</p></noscript>
+      <section class="lineup" aria-labelledby="lineup-title">
+        <p class="eyebrow">CHOOSE YOUR KEYBOARD</p><h2 id="lineup-title">まずは、気になる一台から。</h2>
+        <div class="product-options">{products.map((p) => <button type="button" data-product={p.id} aria-pressed={p.id === 'polaris'}><strong>{p.name}</strong><span>{p.description}</span><small>本体参照 {yen(p.basePrice)}〜</small></button>)}</div>
+        <p class="small" id="product-change-note" role="status">製品を切り替えると、構成・入力価格・手持ちの選択は初期値に戻ります。</p>
+      </section>
       <div class="sim-layout">
         <form id="configurator" novalidate>
           <section class="panel">
@@ -53,24 +52,32 @@ const extras = [
               <button type="button" data-preset="semi-case" aria-pressed="true">はんだ付けを少なく<span>半組 ＋ ケース付き</span></button>
               <button type="button" data-preset="assembled">本体の組立をおまかせ<span>モジュール等は別途</span></button>
             </div>
-            <p class="input-note" id="printer-note">3Dプリンタがなくても、ケース付き構成なら本体の印刷は不要です。下で案内するBOOTHのモジュールにもハウジングが付属します。はんだ付けを減らすなら「半組 ＋ ケース付き」を選べます。</p>
+            <p class="input-note" id="printer-note">3Dプリンタがなくても、ケース付き構成なら本体の印刷は不要です。下で案内するBOOTHのモジュールにもハウジングが付属します。</p>
             <label class="field-label" for="assembly">本体の構成</label>
             <select id="assembly" name="assembly">{assemblies.map((a) => <option value={a.id} selected={a.id === 'semi-case'}>{a.name}　{a.price ? `＋${yen(a.price)}` : '追加料金なし'}</option>)}</select>
-            <div class="base-price"><label for="price-base">本体の参照価格 <small>PCB・電子部品キット</small></label><div class="money-field"><span>¥</span><input id="price-base" name="base" type="number" min="0" max="10000000" step="1" value={catalog.basePrice} inputmode="numeric" /></div></div>
-            <p class="small">参照日 {catalog.referenceDate}・<a href={catalog.productUrl} target="_blank" rel="noopener noreferrer">本体の価格を確認 ↗</a>。価格・販売状況は注文時に確認してください。必要なら金額を修正できます。</p>
-            <p class="included">ソケット46個は付属。ケース付き構成には標準のゴールド（PETG）アクセントプレートが付属します。</p>
+            <div class="base-price"><label for="price-base">本体の参照価格 <small id="base-kind">PCB・電子部品キット</small></label><div class="money-field"><span>¥</span><input id="price-base" name="base" type="number" min="0" max="10000000" step="1" value={catalog.basePrice} inputmode="numeric" /></div></div>
+            <p class="small">参照日 {catalog.referenceDate}・<a data-product-link href={catalog.productUrl} target="_blank" rel="noopener noreferrer">本体の価格を確認 ↗</a>。価格・販売状況は注文時に確認してください。必要なら金額を修正できます。</p>
+            <p class="included" id="included-note">{catalog.includedNote}</p>
+            <div class="switch-choice"><label class="field-label" for="switch-type">本体のスイッチ方式</label><select id="switch-type" name="switchType"><option value="choc">Choc V2互換</option></select></div>
           </section>
           <section class="panel">
             <div class="section-heading"><span class="step">02</span><div><h2>操作を、自分に合わせる。</h2><p>BOOTHで確認したモジュール価格を自動入力。次のステップで修正できます。</p></div></div>
-            <fieldset><legend>左手のモジュール</legend><div class="module-options">{modules.map((m) => <label class="module-option"><input type="radio" name="leftModule" value={m.id} checked={m.id === 'enc'} /><span class="module-symbol" aria-hidden="true">{m.id === 'enc' ? '◉' : m.id === 'tb' ? '●' : '✣'}</span><strong>{m.name}</strong><small>{m.detail}</small><span class="module-price">{yen(m.price)}</span></label>)}</div></fieldset>
-            <fieldset class="right-modules"><legend>右手のモジュール</legend><div class="module-options">{rightModules.map((m) => <label class="module-option"><input type="radio" name="rightModule" value={m.id} checked={m.id === 'tb'} /><span class="module-symbol" aria-hidden="true">{m.id === 'tb' ? '●' : m.id === 'tpd' ? '▣' : '▤'}</span><strong>{m.name}</strong><small>{m.detail}</small><span class="module-price">{yen(m.price)}</span></label>)}</div></fieldset>
-            <p class="input-note" id="right-module-note">{rightModules[1].note}</p>
-            <p class="small">BOOTH参照日：{catalog.referenceDate}（自動更新ではありません）。販売元：<a href={catalog.moduleUrl} target="_blank" rel="noopener noreferrer">なれはてぷれいぐらうんど</a>。トラボ・エンコーダ・スティック＋エンコーダの組立済みオプションは1個につき＋500円（サポート用Aを5個）。希望する個数分を「その他の追加費用」に入力し、注文後すぐに適用するモジュールを販売者へ連絡してください。トラパ・IQSの組立状態は各商品ページを確認してください。</p>
+            {['left', 'right'].map((side) => <fieldset class={side === 'right' ? 'right-modules' : ''}><legend>{side === 'left' ? '左' : '右'}手のモジュール</legend><div class="module-options">{Object.values(moduleCatalog).map((m) => <label class="module-option" data-module-side={side} data-module-id={m.id} hidden={!catalog[`${side}Modules`].includes(m.id)}><input type="radio" name={`${side}Module`} value={m.id} checked={m.id === (side === 'left' ? 'enc' : 'tb')} /><span class="module-symbol" aria-hidden="true">{m.id === 'tb' ? '●' : m.id === 'enc' ? '◉' : m.id === 'joy' ? '✣' : '▣'}</span><strong>{m.name}</strong><small>{m.detail}</small><span class="module-price">{yen(m.price)}</span></label>)}</div></fieldset>)}
+            <p class="input-note" id="bundle-note" hidden>MeKaBuのこのキットにはエンコーダ1個・トラボ1個が付属します。左右を入れ替えて使えます。同じ種類を2個選ぶ場合は、足りない1個だけ別途購入します。</p>
+            <p class="input-note" id="right-module-note">{initial.right.note}</p>
+            <div class="ananta-iqs" id="ananta-iqs" hidden>
+              <h3>追加IQS（Ananta専用・任意）</h3>
+              <p class="small">通常モジュールとは別の外付けです。「SparAkashaAnanta用（左右ハウジングセット）」はモジュール1個につき9,500円。両側に載せる場合は2個分で計算します。IQSを載せる側はOLEDを取り付けません。</p>
+              <div class="iqs-choices"><label><input type="checkbox" name="enable-iqsLeft" />左にIQSを追加</label><label><input type="checkbox" name="enable-iqsRight" />右にIQSを追加</label></div>
+              <label class="field-label" for="central-side">ファームウェアで設定するCentral側</label><select id="central-side" name="centralSide"><option value="">未選択（IQS追加時に必要）</option><option value="left">左がCentral / 右がPeripheral</option><option value="right">右がCentral / 左がPeripheral</option></select>
+              <p class="small">Peripheral側のトラボ・トラパ・スティック＋IQSはサポート対象外です。接続先を変えるだけではなく、実際のファームウェア設定と合わせてください。</p>
+            </div>
+            <p class="small">BOOTH参照日：{catalog.referenceDate}（自動更新ではありません）。販売元：<a href={catalog.moduleUrl} target="_blank" rel="noopener noreferrer">なれはてぷれいぐらうんど</a>。別途購入するトラボ・エンコーダ・スティック＋エンコーダの組立済みオプションは1個につき＋500円（サポート用Aを5個）。希望する個数分を「その他の追加費用」に入力し、注文後すぐに適用するモジュールを販売者へ連絡してください。トラパ・IQSの組立状態は各商品ページを確認してください。</p>
           </section>
           <section class="panel">
             <div class="section-heading"><span class="step">03</span><div><h2>買い足すものを確認。</h2><p>単価ではなく、必要数分の合計額を入力してください。</p></div></div>
             <p class="input-note">未入力は「要確認」のまま残します。手持ちで必要数を満たすものはチェック。部品代に含まれるもの・送料無料は、確認したうえで0円を入力できます。</p>
-            <div class="extra-list">{extras.map((e) => <div class="extra" data-extra={e.id} hidden={e.id === 'case'}><div class="extra-title"><label for={`price-${e.id}`}>{e.title} <span data-quantity={e.id}>{e.quantity}</span></label><p>{e.hint} {e.link && <a id={`source-${e.id}`} href={e.link} target="_blank" rel="noopener noreferrer">{e.linkText} ↗</a>}</p></div><div class="extra-controls"><label class="owned"><input type="checkbox" name={`owned-${e.id}`} />手持ちを使う</label><div class="money-field"><span>¥</span><input id={`price-${e.id}`} name={e.id} type="number" min="0" max="10000000" step="1" value={e.price} placeholder="未入力" inputmode="numeric" /></div></div></div>)}</div>
+            <div class="extra-list">{extraIds.map((id) => { const row = initial.rows.find((r) => r.id === id); return <div class="extra" data-extra={id} hidden={!row}><div class="extra-title"><label for={`price-${id}`}><b id={`title-${id}`}>{row?.label ?? id}</b><span id={`quantity-${id}`}>{row?.quantity}</span></label><p><span id={`hint-${id}`}></span> <a id={`source-${id}`} href={row?.url} hidden={!row?.url} target="_blank" rel="noopener noreferrer">商品・仕様を確認 ↗</a></p><p class="included-status" id={`included-${id}`} hidden>キットに同梱 / 追加0円</p></div><div class="extra-controls"><label class="owned"><input type="checkbox" name={`owned-${id}`} />手持ちを使う</label><div class="money-field"><span>¥</span><input id={`price-${id}`} name={id} type="number" min="0" max="10000000" step="1" value={row?.amount ?? undefined} placeholder="未入力" inputmode="numeric" /></div></div></div>; })}</div>
             <div class="extra"><div class="extra-title"><label for="price-shipping">送料 <span>全購入先の合計</span></label><p>自店・モジュール購入先など、複数店舗の送料を含めてください。</p></div><div class="money-field"><span>¥</span><input id="price-shipping" name="shipping" type="number" min="0" max="10000000" step="1" placeholder="未入力" inputmode="numeric" /></div></div>
             <details class="additional"><summary>工具・別色プレートなどの追加費用を入れる</summary><label class="field-label" for="price-other">その他の追加費用（合計・任意）</label><div class="money-field"><span>¥</span><input id="price-other" name="other" type="number" min="0" max="10000000" step="1" placeholder="未入力なら含めません" inputmode="numeric" /></div></details>
             <p class="small">手持ちの購入費は今回の追加費用に含めません。工具・印刷設備・任意の追加品は、入力しない限り計算に含みません。金額は0〜10,000,000円の整数で入力してください。</p>
@@ -83,6 +90,7 @@ const extras = [
             <div class="amount-summary" aria-live="polite" aria-atomic="true"><p id="total-label">入力済み小計</p><p class="total" id="total">—</p><p id="total-note"></p></div>
             <div class="mini-breakdown"><div><span>本体 ＋ 組立オプション</span><strong id="body-total">—</strong></div><div><span>別売部品・送料などの入力分</span><strong id="extra-total">—</strong></div></div>
             <div class="missing-box" id="missing-box"><strong id="missing-title"></strong><ul id="missing-list"></ul></div>
+            <div class="config-warning" id="config-warning" hidden role="status"><strong>構成の変更・確認が必要です</strong><ul id="warning-list"></ul></div>
             <p class="estimate-disclaimer">参照価格＋入力額による試算です。販売価格・送料・在庫を保証するものではありません。</p>
             <a class="primary-button" href="#shopping">購入リストを見る <span aria-hidden="true">↓</span></a>
           </div>
@@ -96,86 +104,16 @@ const extras = [
         <p class="order-note" id="order-note"></p>
         <details id="copy-fallback" hidden><summary>構成メモを選択してコピー</summary><textarea id="memo" readonly aria-label="構成メモ"></textarea></details>
       </section>
-      <footer class="page-footer"><p>このページは試作公開です。選択内容はサーバーへ送信・保存されません。<br />価格の参照元：<a href={catalog.productUrl}>本体商品ページ</a> / <a href={catalog.supportUrl}>サポート用商品</a> / <a href={`${base}guides/20geaconpolaris/`}>購入ガイド</a></p><a href={base}>Playgroundに戻る ↗</a></footer>
+      <footer class="page-footer"><p>このページは試作公開です。選択内容はサーバーへ送信・保存されません。<br />価格の参照元：<a data-product-link href={catalog.productUrl}>本体商品ページ</a><span id="support-reference"> / <a id="support-link" href={catalog.supportUrl}>サポート用商品</a></span> / <a data-guide-link href={`${base}guides/20geaconpolaris/`}>購入ガイド</a></p><a href={base}>Playgroundに戻る ↗</a></footer>
     </main>
   </body>
 </html>
 
-<script>
-  import { estimate, buildShoppingText, modules, rightModules, yen } from '../lib/price-simulator.mjs';
-  const form = document.querySelector<HTMLFormElement>('#configurator')!;
-  const element = (id: string) => document.getElementById(id)!;
-  const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
-  let result: ReturnType<typeof estimate>;
-  const setText = (id: string, value: string) => { element(id).textContent = value; };
-  function render() {
-    const data = new FormData(form);
-    const amounts = Object.fromEntries(['base', 'case', 'left', 'right', 'switches', 'keycaps', 'batteries', 'balls', 'shipping', 'other'].map((key) => [key, input(key).value]));
-    const owned = Object.fromEntries(['case', 'left', 'right', 'switches', 'keycaps', 'batteries', 'balls'].map((key) => [key, data.has(`owned-${key}`)]));
-    result = estimate({ assembly: data.get('assembly'), leftModule: data.get('leftModule'), rightModule: data.get('rightModule'), amounts, owned });
-    document.querySelector<HTMLElement>('[data-extra="case"]')!.hidden = result.assembly.hasCase;
-    document.querySelector<HTMLElement>('[data-extra="balls"]')!.hidden = result.balls === 0;
-    document.querySelector('[data-quantity="balls"]')!.textContent = `${result.balls}セット分`;
-    document.querySelector('[data-quantity="left"]')!.textContent = `${result.left.name}・1個`;
-    (element('source-left') as HTMLAnchorElement).href = result.left.url;
-    document.querySelector('[data-quantity="right"]')!.textContent = `${result.right.name}・1個`;
-    (element('source-right') as HTMLAnchorElement).href = result.right.url;
-    setText('right-module-note', result.right.note);
-    element('module-visual').className = result.left.id === 'tb' ? 'ball' : 'knob';
-    element('right-module-visual').className = result.right.id === 'tb' ? 'ball' : 'pad';
-    for (const [key, value] of Object.entries(owned)) input(key).disabled = value;
-    for (const key of Object.keys(amounts)) {
-      const row = result.rows.find((r) => r.id === key);
-      const invalid = !!row && !row.owned && String(amounts[key] ?? '').trim() !== '' && row.amount === null;
-      input(key).setAttribute('aria-invalid', String(invalid));
-    }
-    setText('build-description', `${result.assembly.name}\n左：${result.left.name} / 右：${result.right.name}`);
-    setText('total-label', result.complete ? '入力額による費用の目安' : '入力済み小計');
-    setText('total', yen(result.total));
-    setText('total-note', result.complete ? '送料を含む / 注文前に販売価格を再確認' : `あと${result.missing.length}項目の金額が必要です。総額はまだ確定していません。`);
-    setText('body-total', result.rows[0].amount === null ? '本体価格を確認' : yen(result.rows.filter((r) => ['base','support'].includes(r.id)).reduce((s,r) => s + (r.amount ?? 0), 0)));
-    setText('extra-total', yen(result.rows.filter((r) => !['base','support'].includes(r.id)).reduce((s,r) => s + (r.amount ?? 0), 0)));
-    element('missing-box').hidden = result.complete;
-    setText('missing-title', '未入力・金額を確認するもの');
-    const list = (id: string, values: string[]) => element(id).replaceChildren(...values.map((v) => { const li = document.createElement('li'); li.textContent = v; return li; }));
-    list('missing-list', result.missing.map((r) => r.label));
-    list('work-list', result.work);
-    element('shopping-rows').replaceChildren(...result.rows.map((row) => {
-      const tr = document.createElement('tr');
-      [row.label, row.quantity, row.owned ? '手持ち / 追加費用なし' : row.amount === null ? '金額を確認' : yen(row.amount)].forEach((v, index) => { const td = document.createElement(index === 0 ? 'th' : 'td'); if (index === 0) td.setAttribute('scope','row'); td.textContent = v; if (row.amount === null && index === 2) td.className = 'unpriced'; tr.append(td); });
-      const td = document.createElement('td');
-      if (row.url && !row.owned) { const a = document.createElement('a'); a.href = row.url; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = `${row.shop} ↗`; td.append(a); } else td.textContent = row.owned ? '必要数・対応を確認' : row.shop;
-      tr.append(td); return tr;
-    }));
-    setText('order-note', result.assembly.supportUnits ? `本体と一緒に、サポート用商品の「100円」を${result.assembly.supportUnits}個購入する構成です。「10,000円」の商品とは別です。購入後、希望する「${result.assembly.name}」を販売者に連絡してください。` : '本体はPCB・電子部品のみの構成です。ケース・モジュール・別売部品は購入リストに沿って別途用意してください。');
-    document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.preset === result.assembly.id)));
-    (element('memo') as HTMLTextAreaElement).value = buildShoppingText(result);
-    setText('copy-status', '');
-  }
-  form.addEventListener('submit', (event) => event.preventDefault());
-  form.addEventListener('input', (event) => {
-    if ((event.target as HTMLInputElement).type === 'number') render();
-  });
-  form.addEventListener('change', (event) => {
-    const target = event.target as HTMLInputElement;
-    if (target.name === 'leftModule' || target.name === 'rightModule') {
-      // Only the changed side gets a new quote; preserve the other side's input.
-      const side = target.name === 'leftModule' ? 'left' : 'right';
-      const selected = (side === 'left' ? modules : rightModules).find((m) => m.id === target.value)!;
-      input(side).value = String(selected.price); input(`owned-${side}`).checked = false;
-      input('balls').value = '0'; input('owned-balls').checked = false;
-    }
-    render();
-  });
-  document.querySelectorAll<HTMLButtonElement>('[data-preset]').forEach((button) => button.addEventListener('click', () => { input('assembly').value = button.dataset.preset!; render(); }));
-  element('copy-list').addEventListener('click', async () => {
-    try { await navigator.clipboard.writeText(buildShoppingText(result)); setText('copy-status', '構成メモをコピーしました。'); }
-    catch { const fallback = element('copy-fallback') as HTMLDetailsElement; fallback.hidden = false; fallback.open = true; const memo = element('memo') as HTMLTextAreaElement; memo.focus(); memo.select(); setText('copy-status', '自動コピーが使えません。下の構成メモを選択してコピーしてください。'); }
-  });
-  render();
-</script>
+<script>import "../lib/simulator-client";</script>
 
 <style>
+  .lineup{margin:20px 0 30px}.lineup .eyebrow{margin-bottom:8px}.product-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:18px}.product-options button{border:1px solid var(--line);background:#fff;border-radius:10px;padding:20px;text-align:left;color:var(--ink)}.product-options button[aria-pressed=true]{border:2px solid var(--green);background:#eff5e7;padding:19px}.product-options strong{display:block;font-size:18px;overflow-wrap:anywhere}.product-options span,.product-options small{display:block;font-size:11px;line-height:1.8;margin-top:10px}.product-options span{color:var(--muted)}.product-options small{color:var(--green)}.switch-choice{margin-top:20px}.ananta-iqs{padding:18px;background:#f3f6ee;border-radius:8px;margin-top:20px}.ananta-iqs h3{font-size:15px;margin:0}.iqs-choices{display:flex;gap:15px;flex-wrap:wrap;font-size:12px;margin:18px 0}.config-warning{border:1px solid #eead73;background:#422c21;color:#ffdfbf;font-size:12px;padding:15px;border-radius:8px;margin-top:15px}.config-warning ul{padding-left:18px;line-height:1.9}.included-status{font-weight:bold;color:var(--green)!important}.extra-title label>b{font-weight:inherit}.module-price{margin-top:auto!important;padding-top:12px}
+  @media(max-width:620px){.product-options{grid-template-columns:1fr;gap:8px}.product-options button{padding:15px}.product-options button[aria-pressed=true]{padding:14px}.product-options strong{font-size:17px}.product-options span,.product-options small{margin-top:5px}}
   .right-modules{margin-top:24px}#right-module-note{margin-top:16px}
   .pad{position:absolute;bottom:10px;right:10px;width:40px;height:27px;border:3px solid #233d32;border-radius:5px;background:#c9dcb3;box-shadow:0 0 0 2px #a5baa0}
   .module-price{margin-top:12px;font-size:15px;font-weight:bold;color:var(--green);font-variant-numeric:tabular-nums}

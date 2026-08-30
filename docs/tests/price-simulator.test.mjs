@@ -2,6 +2,96 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { estimate, parseAmount, buildShoppingText } from '../src/lib/price-simulator.mjs';
 
+test('MeKaBu prices are complete variants without a second support charge', () => {
+  for (const [assembly, base, total] of [['kit', 21000, 29500], ['case', 33000, 33000], ['semi-case', 36000, 36000], ['assembled', 40000, 40000]]) {
+    const r = estimate({ product: 'mekabu', assembly });
+    assert.equal(r.rows.find((x) => x.id === 'base').amount, base);
+    assert.equal(r.total, total);
+    assert.equal(r.rows.some((x) => x.id === 'support'), false);
+    assert.equal(r.rows.find((x) => x.id === 'base').url, 'https://mekabukb.booth.pm/items/8089264');
+    assert.equal(r.rows.find((x) => x.id === 'left').included, assembly !== 'kit');
+    assert.equal(r.rows.find((x) => x.id === 'right').included, assembly !== 'kit');
+    assert.match(r.rows.find((x) => x.id === 'batteries').label, /LiPo/);
+  }
+});
+
+test('MeKaBu bundle allocates exactly one encoder and one trackball across sides', () => {
+  assert.equal(estimate({ product: 'mekabu', leftModule: 'tb', rightModule: 'enc' }).total, 36000);
+  const twoTb = estimate({ product: 'mekabu', leftModule: 'tb', rightModule: 'tb' });
+  assert.equal(twoTb.total, 40500);
+  assert.equal(twoTb.rows.filter((r) => ['left', 'right'].includes(r.id) && r.included).length, 1);
+  const owned = estimate({ product: 'mekabu', leftModule: 'tb', rightModule: 'tb', owned: { left: true } });
+  assert.equal(owned.total, 36000);
+  assert.equal(owned.rows.find((r) => r.id === 'right').included, true);
+  const changed = estimate({ product: 'mekabu', leftModule: 'joy', rightModule: 'tpd' });
+  assert.equal(changed.total, 44000); // Unused bundled parts do not reduce the kit price.
+});
+
+test('MeKaBu bare kit separates paid data from printing costs', () => {
+  const r = estimate({ product: 'mekabu', assembly: 'kit', amounts: { case: 1500 } });
+  assert.equal(r.rows.find((x) => x.id === 'caseData').amount, 2000);
+  assert.equal(r.total, 31000);
+  const alreadyOwned = estimate({ product: 'mekabu', assembly: 'kit', owned: { caseData: true }, amounts: { case: 1500 } });
+  assert.equal(alreadyOwned.total, 29000);
+  const withCase = estimate({ product: 'mekabu', assembly: 'case', amounts: { case: 1500, caseData: -1 } });
+  assert.equal(withCase.rows.some((x) => ['case', 'caseData'].includes(x.id)), false);
+  assert.equal(withCase.total, 33000);
+});
+
+test('Ananta has AA batteries and switch-dependent sockets and solder work', () => {
+  const mx = estimate({ product: 'ananta' });
+  assert.match(mx.rows.find((r) => r.id === 'batteries').label, /単3/);
+  assert.match(mx.rows.find((r) => r.id === 'sockets').label, /MX/);
+  assert.ok(mx.missing.some((r) => r.id === 'sockets'));
+  for (const switchType of ['choc', 'alps']) {
+    const r = estimate({ product: 'ananta', switchType, amounts: { sockets: 5000 } });
+    assert.equal(r.rows.some((x) => x.id === 'sockets'), false);
+    assert.equal(r.total, 38500);
+    assert.match(r.work.join('\n'), /直接はんだ付け/);
+    assert.match(r.rows.find((x) => x.id === 'keycaps').label, /通常ピッチ/);
+  }
+  assert.match(estimate({ product: 'ananta', assembly: 'assembled' }).work.join('\n'), /ソケットをはんだ付け/);
+});
+
+test('one-key modules add separate Choc switch and cap sets', () => {
+  for (const product of ['ananta', 'mekabu']) {
+    const r = estimate({ product, leftModule: 'key', rightModule: 'key' });
+    assert.equal(r.rows.find((x) => x.id === 'moduleKeys').quantity, '2セット');
+    assert.equal(r.rows.find((x) => x.id === 'switches').quantity, '46個');
+    assert.ok(r.missing.some((x) => x.id === 'moduleKeys'));
+    assert.equal(r.balls, 0);
+  }
+});
+
+test('Ananta external IQS counts sensors, requires role selection and rejects unsupported peripheral combinations', () => {
+  const noRole = estimate({ product: 'ananta', iqsLeft: true });
+  assert.equal(noRole.rows.find((r) => r.id === 'iqsLeft').amount, 9500);
+  assert.equal(noRole.total, 48000);
+  assert.match(noRole.warnings.join(''), /Central/);
+  for (const peripheralModule of ['tb', 'tpd', 'joy']) {
+    const r = estimate({ product: 'ananta', iqsRight: true, centralSide: 'left', rightModule: peripheralModule });
+    assert.match(r.warnings.join(''), /サポート対象外/);
+    assert.equal(r.complete, false);
+  }
+  const two = estimate({ product: 'ananta', leftModule: 'enc', rightModule: 'enc', iqsLeft: true, iqsRight: true, centralSide: 'left' });
+  assert.equal(two.total, 55000);
+  assert.equal(two.warnings.length, 0);
+  assert.equal(two.rows.filter((r) => r.id.startsWith('iqs')).length, 2);
+  assert.match(two.work.join(''), /OLEDを取り付けない/);
+  assert.match(buildShoppingText(two), /Central：左/);
+  const inverse = estimate({ product: 'ananta', leftModule: 'tb', rightModule: 'enc', iqsLeft: true, centralSide: 'right' });
+  assert.match(inverse.warnings.join(''), /Peripheral側（左）/);
+});
+
+test('product-specific settings cannot silently form a valid incompatible configuration', () => {
+  const mekabu = estimate({ product: 'mekabu', rightModule: 'iqs', switchType: 'mx', iqsLeft: true, amounts: { iqsLeft: 9500 } });
+  assert.equal(mekabu.complete, false);
+  assert.equal(mekabu.warnings.length, 2);
+  assert.equal(mekabu.rows.some((r) => r.id === 'iqsLeft'), false);
+  assert.equal(mekabu.total, 36000);
+  assert.equal(estimate({ product: 'polaris', amounts: { caseData: 2000, sockets: 1500, moduleKeys: 1000, iqsLeft: 9500 } }).total, 38500);
+});
+
 const complete = {
   assembly: 'semi-case', leftModule: 'enc',
   amounts: { base: '27000', left: '2500', right: '3500', switches: '4600', keycaps: '2000', batteries: '500', balls: '1000', shipping: '900' },
