@@ -102,7 +102,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
         margin-left: .75rem;
         font-size: .8rem;
       }
-      h1 { font-size: clamp(2.4rem, 8vw, 5.5rem); line-height:.9; letter-spacing:-.06em; }
+      h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height:1.35; letter-spacing:-.025em; overflow-wrap: anywhere; }
       :global(h2), :global(h3) { scroll-margin-top: 1.5rem; }
       :global(img) {
         display: block;
@@ -119,6 +119,8 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
       :global(code) { color: var(--cyan); }
       :global(table) { display: block; overflow-x: auto; border-collapse: collapse; }
       :global(th), :global(td) { border: 1px solid var(--line); padding: .5rem .75rem; }
+      :global(th:first-child), :global(td:first-child) { min-width: 7em; }
+      :global(td) { line-height: 1.7; vertical-align: top; }
       .image-dialog {
         width: min(100vw - 24px, 1280px);
         max-height: calc(100dvh - 24px);
@@ -167,6 +169,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
         }
       }
       @media (max-width: 900px) {
+        :global(h2), :global(h3) { scroll-margin-top: 6rem; }
         .guide-layout {
           grid-template-columns: 1fr;
           gap: 1.25rem;
@@ -199,12 +202,12 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
   <body>
     <div class="guide-layout">
       {headings.length > 0 && (
-        <aside class="toc" aria-label="Table of contents">
+        <aside class="toc" aria-label="目次">
           <div class="toc-head">
-            <p class="toc-title">Contents</p>
-            <button class="toc-toggle" type="button" aria-expanded="false">Open</button>
+            <p class="toc-title">目次</p>
+            <button class="toc-toggle" type="button" aria-expanded="false" aria-controls="guide-toc">開く</button>
           </div>
-          <nav>
+          <nav id="guide-toc">
             {headings.map((heading) => (
               <a href={`#${heading.slug}`} data-depth={heading.depth}>{heading.text}</a>
             ))}
@@ -249,13 +252,13 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
       const toc = document.querySelector('.toc');
       const tocToggle = document.querySelector('.toc-toggle');
       const sections = tocLinks
-        .map((link) => document.getElementById(link.hash.slice(1)))
+        .map((link) => document.getElementById(link.getAttribute('href').slice(1)))
         .filter(Boolean);
 
       tocToggle?.addEventListener('click', () => {
         const isOpen = toc?.classList.toggle('is-open') ?? false;
         tocToggle.setAttribute('aria-expanded', String(isOpen));
-        tocToggle.textContent = isOpen ? 'Close' : 'Open';
+        tocToggle.textContent = isOpen ? '閉じる' : '開く';
       });
 
       tocLinks.forEach((link) => {
@@ -263,7 +266,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
           if (!window.matchMedia('(max-width: 900px)').matches) return;
           toc?.classList.remove('is-open');
           tocToggle?.setAttribute('aria-expanded', 'false');
-          if (tocToggle) tocToggle.textContent = 'Open';
+          if (tocToggle) tocToggle.textContent = '開く';
         });
       });
 
@@ -274,9 +277,12 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
             .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
           if (!visible) return;
           tocLinks.forEach((link) => {
-            link.classList.toggle('is-active', link.hash === `#${visible.target.id}`);
+            const isActive = link.getAttribute('href') === `#${visible.target.id}`;
+            link.classList.toggle('is-active', isActive);
+            if (isActive) link.setAttribute('aria-current', 'location');
+            else link.removeAttribute('aria-current');
           });
-        }, { rootMargin: '-18% 0px -70% 0px', threshold: [0, .4, 1] });
+        }, { rootMargin: '0px 0px -60% 0px', threshold: [0, .4, 1] });
 
         sections.forEach((section) => observer.observe(section));
       }
