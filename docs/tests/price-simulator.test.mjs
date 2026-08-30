@@ -9,13 +9,36 @@ const complete = {
 
 test('unknown prices remain missing; explicit zero is a valid amount', () => {
   const result = estimate({ assembly: 'semi-case' });
-  assert.equal(result.total, 32000);
+  assert.equal(result.total, 38500);
   assert.equal(result.complete, false);
-  assert.equal(result.missing.length, 7);
+  assert.equal(result.missing.length, 4);
   assert.equal(parseAmount('0'), 0);
   for (const value of ['', ' ', null, undefined, '-1', '1.5', 'NaN', 'Infinity', '10000001', '1e3']) {
     assert.equal(parseAmount(value), null, String(value));
   }
+});
+
+test('BOOTH module prices follow the selected kit and link to the seller', () => {
+  for (const [leftModule, price, item] of [['enc', 2000, '8375550'], ['tb', 4500, '8375514'], ['joy', 3500, '8375543']]) {
+    const result = estimate({ assembly: 'case', leftModule });
+    const left = result.rows.find((r) => r.id === 'left');
+    assert.equal(left.amount, price);
+    assert.equal(left.url, `https://te9no.booth.pm/items/${item}`);
+    assert.equal(result.rows.find((r) => r.id === 'right').amount, 4500);
+    assert.equal(result.rows.find((r) => r.id === 'balls').amount, 0);
+    assert.equal(result.total, 29000 + price + 4500);
+    assert.equal(result.rows.some((r) => r.id === 'case'), false);
+    assert.equal(result.work.some((w) => w.includes('印刷設備')), false);
+  }
+});
+
+test('clearing a reference price leaves it unknown; ownership excludes it', () => {
+  const cleared = estimate({ amounts: { left: '', right: '', balls: '' } });
+  assert.ok(cleared.missing.some((r) => r.id === 'left'));
+  assert.ok(cleared.missing.some((r) => r.id === 'right'));
+  assert.ok(cleared.missing.some((r) => r.id === 'balls'));
+  const owned = estimate({ owned: { left: true, right: true } });
+  assert.equal(owned.total, 32000);
 });
 
 test('complete quote includes parts and all-store shipping', () => {

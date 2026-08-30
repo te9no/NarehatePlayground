@@ -5,7 +5,7 @@ export const catalog = {
   basePrice: 27000,
   productUrl: 'https://te9no.booth.pm/items/7995609',
   supportUrl: 'https://te9no.booth.pm/items/8017110',
-  moduleUrl: 'https://mekabukb.booth.pm/',
+  moduleUrl: 'https://te9no.booth.pm/item_lists/mVWTaLGj',
   caseUrl: 'https://github.com/te9no/zmk-config-GeaconPolaris/',
 };
 
@@ -18,10 +18,12 @@ export const assemblies = [
 ];
 
 export const modules = [
-  { id: 'enc', name: 'エンコーダ', detail: '回転操作を追加' },
-  { id: 'tb', name: 'トラックボール', detail: '左手でもポインター操作' },
-  { id: 'joy', name: 'スティック ＋ エンコーダ', detail: 'スティックと回転操作' },
+  { id: 'enc', name: 'エンコーダ', detail: '回転操作を追加', price: 2000, url: 'https://te9no.booth.pm/items/8375550' },
+  { id: 'tb', name: 'トラックボール', detail: '左手でもポインター操作', price: 4500, url: 'https://te9no.booth.pm/items/8375514' },
+  { id: 'joy', name: 'スティック ＋ エンコーダ', detail: 'スティックと回転操作', price: 3500, url: 'https://te9no.booth.pm/items/8375543' },
 ];
+
+export const rightModule = modules.find((m) => m.id === 'tb');
 
 export const yen = (value) => `¥${value.toLocaleString('ja-JP')}`;
 
@@ -36,17 +38,18 @@ export function parseAmount(raw) {
 export function estimate(state) {
   const assembly = assemblies.find((x) => x.id === state.assembly) ?? assemblies[3];
   const left = modules.find((x) => x.id === state.leftModule) ?? modules[0];
-  const amounts = state.amounts ?? {};
+  // Defaults come from the linked BOOTH kits. Explicitly cleared prices stay unknown.
+  const amounts = { left: left.price, right: rightModule.price, balls: 0, ...state.amounts };
   const owned = state.owned ?? {};
   const balls = left.id === 'tb' ? 2 : 1;
   const definitions = [
     ...(!assembly.hasCase ? [{ id: 'case', label: 'ケース・印刷部品一式', quantity: '1式', url: catalog.caseUrl, shop: '自分で用意' }] : []),
-    { id: 'left', label: `左：${left.name}モジュール`, quantity: '1個', url: catalog.moduleUrl, shop: 'MeKaBu Project' },
-    { id: 'right', label: '右：トラックボールモジュール', quantity: '1個', url: catalog.moduleUrl, shop: 'MeKaBu Project' },
+    { id: 'left', label: `左：${left.name}モジュール`, quantity: '1個', url: left.url, shop: 'なれはてぷれいぐらうんど' },
+    { id: 'right', label: '右：トラックボールモジュール', quantity: '1個', url: rightModule.url, shop: 'なれはてぷれいぐらうんど' },
     { id: 'switches', label: 'Choc V2互換スイッチ', quantity: '46個', shop: '別途用意' },
     { id: 'keycaps', label: '17mmピッチ用キーキャップ', quantity: '46個', shop: '別途用意' },
     { id: 'batteries', label: '単4形Ni-MH充電池', quantity: '2個', shop: '別途用意' },
-    { id: 'balls', label: 'トラックボール・サイズ別部品', quantity: `${balls}セット分`, shop: '別途用意' },
+    { id: 'balls', label: '別サイズのボール・追加部品', quantity: `${balls}セット分`, shop: '標準20mmボールはモジュールに同梱' },
     { id: 'shipping', label: '全購入先の送料', quantity: '合計', shop: '各店舗で確認' },
   ];
   const rows = [
@@ -61,7 +64,7 @@ export function estimate(state) {
     ...(!assembly.hasCase ? ['ケース・印刷部品を別途準備する（印刷設備・材料・仕上げが必要）'] : []),
     ...(assembly.solder === 'all' ? ['本体の電子部品・ソケットをはんだ付けする'] : assembly.solder === 'sockets' ? ['本体のスイッチソケットをはんだ付けする'] : []),
     ...(assembly.solder !== 'none' ? ['本体ケースを組み立てる'] : []),
-    'モジュールを用意・取り付ける（モジュール自体の組立範囲は購入先で確認）',
+    'モジュールを組み立て・取り付ける（ハウジングは付属。本体の組立オプションとは別）',
     'スイッチ46個・キーキャップ46個・指定の電池を用意する',
     '左右とモジュールに対応するファームウェア・初期設定・動作を確認する',
   ];
@@ -75,6 +78,7 @@ export function buildShoppingText(result) {
     ...result.rows.map((r) => `・${r.label} × ${r.quantity}：${r.owned ? '手持ちを使う（追加購入なし）' : r.amount === null ? '金額未入力・要確認' : yen(r.amount)}${r.url ? `\n  ${r.url}` : ''}`),
     `${result.complete ? '入力額による費用の目安' : '入力済み小計（総額未確定）'}：${yen(result.total)}`,
     ...(result.missing.length ? [`未入力：${result.missing.map((r) => r.label).join('、')}`] : []),
+    `BOOTH参照日：${catalog.referenceDate}。モジュールは組立キット価格。標準20mmボール・ハウジングはモジュールに同梱。`,
     '販売価格・在庫・同梱品は注文時に確認。工具・印刷設備・任意の追加品は、その他費用に入力しない限り含みません。',
     ...(result.assembly.price ? [`本体とサポート用「100円」を${result.assembly.supportUnits}個、同時購入し、希望構成を販売者に連絡してください。`] : []),
   ].join('\n');

@@ -1,14 +1,14 @@
 ---
-import { assemblies, modules, catalog, yen } from '../lib/price-simulator.mjs';
+import { assemblies, modules, rightModule, catalog, yen } from '../lib/price-simulator.mjs';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
 const extras = [
   { id: 'case', title: 'ケース・印刷部品', quantity: '一式', hint: 'ケースなし構成のみ。印刷材料・外注費などを入力。', link: catalog.caseUrl, linkText: 'ケースデータ' },
-  { id: 'left', title: '左モジュール', quantity: '1個', hint: '選んだモジュールの価格。組立状態と同梱品を確認。', link: catalog.moduleUrl, linkText: 'MeKaBu Project' },
-  { id: 'right', title: '右トラックボールモジュール', quantity: '1個', hint: 'ボールが別売の場合は、下のボール費用にも入力。', link: catalog.moduleUrl, linkText: 'MeKaBu Project' },
+  { id: 'left', title: '左モジュール', quantity: '1個', hint: '選択した組立キットのBOOTH参照価格を自動入力。ハウジング付属。', link: modules[0].url, linkText: 'BOOTHの商品ページ', price: modules[0].price },
+  { id: 'right', title: '右トラックボールモジュール', quantity: '1個', hint: '組立キットのBOOTH参照価格。20mmボール・ハウジング付属。', link: rightModule.url, linkText: 'BOOTHの商品ページ', price: rightModule.price },
   { id: 'switches', title: 'キースイッチ', quantity: '46個分', hint: 'Kailh Choc V2互換。ソケット46個は本体に付属。' },
   { id: 'keycaps', title: 'キーキャップ', quantity: '46個分', hint: 'MX型十字ステム対応・17mmピッチ用。' },
   { id: 'batteries', title: '電池', quantity: '2個分', hint: '単4形Ni-MH充電池、左右各1個。一次電池は不可。' },
-  { id: 'balls', title: 'ボール・サイズ別部品', quantity: '1セット分', hint: '選んだケースに合う径・部品を確認。モジュール代に含む場合は0円。' },
+  { id: 'balls', title: '別サイズのボール・追加部品', quantity: '1セット分', hint: '標準20mmボールは上のモジュールに同梱（追加0円）。別サイズへ変更する場合だけ追加費用を入力。手持ち利用時も部品が揃っているか確認。', price: 0 },
 ];
 ---
 <!doctype html>
@@ -49,24 +49,27 @@ const extras = [
             <div class="section-heading"><span class="step">01</span><div><h2>どこから組み立てる？</h2><p>まずは出発点を選択。あとから自由に変更できます。</p></div></div>
             <div class="presets" aria-label="構成の出発点">
               <button type="button" data-preset="kit">自分でつくる<span>ケースも自分で用意</span></button>
+              <button type="button" data-preset="case">3Dプリンタがない<span>ケース付きキット</span></button>
               <button type="button" data-preset="semi-case" aria-pressed="true">はんだ付けを少なく<span>半組 ＋ ケース付き</span></button>
               <button type="button" data-preset="assembled">本体の組立をおまかせ<span>モジュール等は別途</span></button>
             </div>
+            <p class="input-note" id="printer-note">3Dプリンタがなくても、ケース付き構成なら本体の印刷は不要です。下で案内するBOOTHのモジュールにもハウジングが付属します。はんだ付けを減らすなら「半組 ＋ ケース付き」を選べます。</p>
             <label class="field-label" for="assembly">本体の構成</label>
             <select id="assembly" name="assembly">{assemblies.map((a) => <option value={a.id} selected={a.id === 'semi-case'}>{a.name}　{a.price ? `＋${yen(a.price)}` : '追加料金なし'}</option>)}</select>
             <div class="base-price"><label for="price-base">本体の参照価格 <small>PCB・電子部品キット</small></label><div class="money-field"><span>¥</span><input id="price-base" name="base" type="number" min="0" max="10000000" step="1" value={catalog.basePrice} inputmode="numeric" /></div></div>
-            <p class="small">参照日 {catalog.referenceDate}・<a href={catalog.productUrl} target="_blank" rel="noopener noreferrer">本体の価格を確認 ↗</a>。取得時に非公開表示もあったため、注文可能かも確認してください。必要なら金額を修正できます。</p>
+            <p class="small">参照日 {catalog.referenceDate}・<a href={catalog.productUrl} target="_blank" rel="noopener noreferrer">本体の価格を確認 ↗</a>。価格・販売状況は注文時に確認してください。必要なら金額を修正できます。</p>
             <p class="included">ソケット46個は付属。ケース付き構成には標準のゴールド（PETG）アクセントプレートが付属します。</p>
           </section>
           <section class="panel">
-            <div class="section-heading"><span class="step">02</span><div><h2>操作を、自分に合わせる。</h2><p>対応するモジュールから選べます。費用は次のステップで入力。</p></div></div>
-            <fieldset><legend>左手のモジュール</legend><div class="module-options">{modules.map((m) => <label class="module-option"><input type="radio" name="leftModule" value={m.id} checked={m.id === 'enc'} /><span class="module-symbol" aria-hidden="true">{m.id === 'enc' ? '◉' : m.id === 'tb' ? '●' : '✣'}</span><strong>{m.name}</strong><small>{m.detail}</small></label>)}</div></fieldset>
-            <div class="fixed-module"><span class="side-tag">右手</span><strong>トラックボール</strong><span>この製品では右手は固定です</span></div>
+            <div class="section-heading"><span class="step">02</span><div><h2>操作を、自分に合わせる。</h2><p>BOOTHで確認した組立キット価格を自動入力。次のステップで修正できます。</p></div></div>
+            <fieldset><legend>左手のモジュール</legend><div class="module-options">{modules.map((m) => <label class="module-option"><input type="radio" name="leftModule" value={m.id} checked={m.id === 'enc'} /><span class="module-symbol" aria-hidden="true">{m.id === 'enc' ? '◉' : m.id === 'tb' ? '●' : '✣'}</span><strong>{m.name}</strong><small>{m.detail}</small><span class="module-price">{yen(m.price)}</span></label>)}</div></fieldset>
+            <div class="fixed-module"><span class="side-tag">右手</span><strong>トラックボール {yen(rightModule.price)}</strong><span>この製品では右手は固定です</span></div>
+            <p class="small">BOOTH参照日：{catalog.referenceDate}（自動更新ではありません）。販売元：<a href={catalog.moduleUrl} target="_blank" rel="noopener noreferrer">なれはてぷれいぐらうんど</a>。組立済みを希望する場合は1個につき＋500円（サポート用Aを5個）。希望する個数分を「その他の追加費用」に入力し、注文後すぐに適用するモジュールを販売者へ連絡してください。</p>
           </section>
           <section class="panel">
             <div class="section-heading"><span class="step">03</span><div><h2>買い足すものを確認。</h2><p>単価ではなく、必要数分の合計額を入力してください。</p></div></div>
             <p class="input-note">未入力は「要確認」のまま残します。手持ちで必要数を満たすものはチェック。部品代に含まれるもの・送料無料は、確認したうえで0円を入力できます。</p>
-            <div class="extra-list">{extras.map((e) => <div class="extra" data-extra={e.id} hidden={e.id === 'case'}><div class="extra-title"><label for={`price-${e.id}`}>{e.title} <span data-quantity={e.id}>{e.quantity}</span></label><p>{e.hint} {e.link && <a href={e.link} target="_blank" rel="noopener noreferrer">{e.linkText} ↗</a>}</p></div><div class="extra-controls"><label class="owned"><input type="checkbox" name={`owned-${e.id}`} />手持ちを使う</label><div class="money-field"><span>¥</span><input id={`price-${e.id}`} name={e.id} type="number" min="0" max="10000000" step="1" placeholder="未入力" inputmode="numeric" /></div></div></div>)}</div>
+            <div class="extra-list">{extras.map((e) => <div class="extra" data-extra={e.id} hidden={e.id === 'case'}><div class="extra-title"><label for={`price-${e.id}`}>{e.title} <span data-quantity={e.id}>{e.quantity}</span></label><p>{e.hint} {e.link && <a id={`source-${e.id}`} href={e.link} target="_blank" rel="noopener noreferrer">{e.linkText} ↗</a>}</p></div><div class="extra-controls"><label class="owned"><input type="checkbox" name={`owned-${e.id}`} />手持ちを使う</label><div class="money-field"><span>¥</span><input id={`price-${e.id}`} name={e.id} type="number" min="0" max="10000000" step="1" value={e.price} placeholder="未入力" inputmode="numeric" /></div></div></div>)}</div>
             <div class="extra"><div class="extra-title"><label for="price-shipping">送料 <span>全購入先の合計</span></label><p>自店・モジュール購入先など、複数店舗の送料を含めてください。</p></div><div class="money-field"><span>¥</span><input id="price-shipping" name="shipping" type="number" min="0" max="10000000" step="1" placeholder="未入力" inputmode="numeric" /></div></div>
             <details class="additional"><summary>工具・別色プレートなどの追加費用を入れる</summary><label class="field-label" for="price-other">その他の追加費用（合計・任意）</label><div class="money-field"><span>¥</span><input id="price-other" name="other" type="number" min="0" max="10000000" step="1" placeholder="未入力なら含めません" inputmode="numeric" /></div></details>
             <p class="small">手持ちの購入費は今回の追加費用に含めません。工具・印刷設備・任意の追加品は、入力しない限り計算に含みません。金額は0〜10,000,000円の整数で入力してください。</p>
@@ -98,7 +101,7 @@ const extras = [
 </html>
 
 <script>
-  import { estimate, buildShoppingText, yen } from '../lib/price-simulator.mjs';
+  import { estimate, buildShoppingText, modules, yen } from '../lib/price-simulator.mjs';
   const form = document.querySelector<HTMLFormElement>('#configurator')!;
   const element = (id: string) => document.getElementById(id)!;
   const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
@@ -112,6 +115,7 @@ const extras = [
     document.querySelector<HTMLElement>('[data-extra="case"]')!.hidden = result.assembly.hasCase;
     document.querySelector('[data-quantity="balls"]')!.textContent = `${result.balls}セット分`;
     document.querySelector('[data-quantity="left"]')!.textContent = `${result.left.name}・1個`;
+    (element('source-left') as HTMLAnchorElement).href = result.left.url;
     element('module-visual').className = result.left.id === 'tb' ? 'ball' : 'knob';
     for (const [key, value] of Object.entries(owned)) input(key).disabled = value;
     for (const key of Object.keys(amounts)) {
@@ -148,9 +152,10 @@ const extras = [
   });
   form.addEventListener('change', (event) => {
     if ((event.target as HTMLInputElement).name === 'leftModule') {
-      // A new module is a new quote. Never carry an unrelated price/ownership over.
-      input('left').value = ''; input('owned-left').checked = false;
-      input('balls').value = ''; input('owned-balls').checked = false;
+      // Reset to the newly selected BOOTH kit, not an unrelated custom quote.
+      const selected = modules.find((m) => m.id === (event.target as HTMLInputElement).value)!;
+      input('left').value = String(selected.price); input('owned-left').checked = false;
+      input('balls').value = '0'; input('owned-balls').checked = false;
     }
     render();
   });
@@ -163,6 +168,8 @@ const extras = [
 </script>
 
 <style>
+  .module-price{margin-top:12px;font-size:15px;font-weight:bold;color:var(--green);font-variant-numeric:tabular-nums}
+  #printer-note{margin-bottom:20px}
   #shopping-rows :global(th), #shopping-rows :global(td){padding:15px 12px;border-bottom:1px solid var(--line);line-height:1.8}
   #shopping-rows :global(th){font-weight:500}
   #shopping-rows :global(td:nth-child(2)), #shopping-rows :global(td:nth-child(3)){white-space:nowrap}
@@ -174,5 +181,6 @@ const extras = [
   @media(max-width:1000px){.sim-layout{grid-template-columns:minmax(0,1fr) 315px;gap:18px}.panel{padding:22px}.hero{gap:15px}.estimate-panel{padding:23px}.presets{grid-template-columns:1fr}.presets button{display:flex;justify-content:space-between;gap:10px;align-items:center}.presets span{margin:0}.desktop-break{display:none}}
   @media(max-width:900px){.sim-layout{grid-template-columns:1fr}.estimate-column{position:static;display:grid;grid-template-columns:1fr 1fr;gap:22px}.hero{grid-template-columns:1fr .75fr}.half{width:125px;height:114px;padding:10px 8px}.keys{gap:3px}.keys i{height:15px}.product-visual{height:215px}.keyboard{gap:10px}.orbit{width:270px}.hero-copy{font-size:13px}.work-panel{padding:20px 0}.presets{grid-template-columns:repeat(3,1fr)}.presets button{display:block}.presets span{margin-top:4px}}
   @media(max-width:620px){.topbar{padding:15px 18px}.brand{font-size:11px;gap:7px}.brand span{font-size:25px}.test-badge{font-size:9px;padding:5px 7px}main{padding:0 16px}.hero{grid-template-columns:1fr;padding:30px 4px 14px;gap:12px}.hero h1{font-size:34px;line-height:1.45}.hero-copy{font-size:13px}.product-visual{height:175px}.keyboard{transform:scale(.9) rotate(-6deg);padding:6px}.product-visual p{font-size:10px;margin:14px 0 0}.orbit{height:150px;width:290px}.trial-note{font-size:11px;padding:15px 0}.panel{padding:20px 16px;margin-bottom:16px;border-radius:11px}.section-heading{gap:10px;margin-bottom:20px}.section-heading h2{font-size:18px}.section-heading p{font-size:11px}.presets{grid-template-columns:1fr}.presets button{display:flex}.presets span{margin:0}.base-price{gap:10px}.base-price label{font-size:11px}.money-field{width:126px}.module-options{gap:6px}.module-option{padding:12px 8px}.module-option strong{font-size:11px}.module-option small{font-size:10px}.extra{gap:10px;align-items:flex-start}.extra-title>label{font-size:12px}.extra-title p{font-size:10px}.extra-controls{padding-top:2px}.estimate-column{display:block}.estimate-panel{padding:25px}.work-panel{padding:25px 8px 10px}.total{font-size:44px}.shopping-heading{display:block}.shopping-heading h2{font-size:19px}.copy-button{margin-top:10px}.page-footer{display:block;font-size:10px}.table-scroll table{min-width:640px}#shopping{scroll-margin-top:12px}}
+  @media(min-width:621px){.presets{grid-template-columns:repeat(2,1fr)}.presets button{display:block}.presets span{margin-top:4px}}
   @media(prefers-reduced-motion:no-preference){button,a{transition:background .15s,border-color .15s}}
 </style>
