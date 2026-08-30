@@ -80,7 +80,7 @@ export function estimate(state = {}) {
     'スイッチ46個・キーキャップ46個・指定の電池を用意する',
     '左右とモジュールに対応するファームウェア・初期設定・動作を確認する',
   ];
-  return { product, assembly, left, right, switchSpec, iqs, centralSide: state.centralSide, balls, moduleKeys, rows, missing, total, work, warnings, complete: !missing.length && !warnings.length };
+  return { product, assembly, left, right, switchSpec, iqs, centralSide: state.centralSide, balls, moduleKeys, rows, missing, total, work, warnings, referenceNote: state.referenceNote, complete: !missing.length && !warnings.length };
 }
 
 export function orderText(result) {
@@ -91,6 +91,7 @@ export function orderText(result) {
 export function buildShoppingText(result) {
   return [
     `${result.product.name} 構成メモ（試算）`,
+    ...(result.referenceNote ? [result.referenceNote] : []),
     `本体：${result.assembly.name} / 左：${result.left.name} / 右：${result.right.name}`,
     `本体スイッチ：${result.switchSpec.name} / 電池：${result.product.battery}`,
     ...(result.iqs.left || result.iqs.right ? [`追加IQS：${result.iqs.left ? '左 ' : ''}${result.iqs.right ? '右' : ''} / Central：${result.centralSide === 'left' ? '左' : result.centralSide === 'right' ? '右' : '要確認'}`] : []),

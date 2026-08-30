@@ -1,4 +1,5 @@
 import { estimate, buildShoppingText, orderText, getProduct, getModuleOptions, getReferenceBase, anantaIqs, yen } from './price-simulator.mjs';
+import { createStarterState } from './beginner-build.mjs';
 
 const form = document.querySelector<HTMLFormElement>('#configurator')!;
 const element = (id: string) => document.getElementById(id)!;
@@ -29,6 +30,8 @@ function resetProduct(id: string, announce = false) {
 function render() {
   result = estimate(state);
   const p = result.product;
+  element('reference-note').hidden = !state.referenceNote;
+  setText('reference-note', state.referenceNote ?? '');
   input('assembly').value = result.assembly.id;
   input('switchType').value = result.switchSpec.id;
   input('centralSide').value = state.centralSide;
@@ -100,7 +103,7 @@ function render() {
   setText('build-description', `${p.name}\n${result.assembly.name} / ${result.switchSpec.name}\n左：${result.left.name} / 右：${result.right.name}${iqsDescription}`);
   setText('total-label', result.complete ? '入力額による費用の目安' : '入力済み小計');
   setText('total', yen(result.total));
-  setText('total-note', result.warnings.length ? '構成の確認が必要です。このまま注文しないでください。' : result.complete ? '送料を含む / 注文前に販売価格を再確認' : `あと${result.missing.length}項目の金額が必要です。総額はまだ確定していません。`);
+  setText('total-note', result.warnings.length ? '構成の確認が必要です。このまま注文しないでください。' : result.complete ? result.referenceNote ? '送料の初期値2,000円は仮予算です。実額に修正し、工具・USBケーブルの不足分も追加してください。' : '送料を含む / 注文前に販売価格を再確認' : `あと${result.missing.length}項目の金額が必要です。総額はまだ確定していません。`);
   setText('body-total', result.rows[0].amount === null ? '本体価格を確認' : yen(result.rows.filter((r) => ['base', 'support'].includes(r.id)).reduce((s, r) => s + (r.amount ?? 0), 0)));
   setText('extra-total', yen(result.rows.filter((r) => !['base', 'support'].includes(r.id)).reduce((s, r) => s + (r.amount ?? 0), 0)));
   element('missing-box').hidden = !result.missing.length;
@@ -166,3 +169,10 @@ element('copy-list').addEventListener('click', async () => {
   catch { const fallback = element('copy-fallback') as HTMLDetailsElement; fallback.hidden = false; fallback.open = true; const memo = element('memo') as HTMLTextAreaElement; memo.focus(); memo.select(); setText('copy-status', '下の構成メモを選択してコピーしてください。'); }
 });
 resetProduct('polaris');
+// Accept only a named local preset; arbitrary URL prices are never trusted.
+if (new URLSearchParams(window.location.search).get('preset') === 'polaris-starter') {
+  state = createStarterState();
+  state.referenceNote += ` 内訳・購入先：${new URL(`${base}test/choose/#starter`, window.location.origin).href}`;
+  render();
+  setText('product-change-note', 'はじめての推奨構成を読み込みました。送料の仮予算を実額に直してください。');
+}

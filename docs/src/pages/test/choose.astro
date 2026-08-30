@@ -1,0 +1,101 @@
+---
+import { products, referenceDate } from '../../lib/simulator-catalog.mjs';
+import { yen } from '../../lib/price-simulator.mjs';
+import { starterItems, starterSubtotal, starterShippingBudget, starterBudget } from '../../lib/beginner-build.mjs';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
+const sim = `${base}test/`;
+const guide = (slug) => `${base}guides/${slug}/`;
+const comparison = [
+  { name: 'GeaconPolaris', status: '今回の比較・試算対象', layout: 'GRIN / 分割・17mmピッチ', keys: '46', switches: 'Choc V2', pointer: '左右に別売モジュール。右はトラパ・トラボ・IQS', work: '本体完成済み＋組立済みモジュールを選べば、取り付け・設定から', url: products[0].productUrl },
+  { name: 'SparAkashaAnanta', status: '今回の比較・試算対象', layout: 'Lotus / 分割・通常ピッチ', keys: '46', switches: 'MX / Choc V2 / ALPS', pointer: '左右に別売モジュール＋外付けIQS（制限あり）', work: 'MXはソケット、Choc V2・ALPSはスイッチのはんだ付けが残る', url: products[1].productUrl },
+  { name: 'MeKaBu', status: '今回の比較・試算対象 / 在庫なし', layout: 'オーソリニア / 分割・17mmピッチ', keys: '46', switches: 'Choc V2', pointer: 'ケース付き3構成にエンコーダ1個・トラボ1個を同梱', work: '組立済みセットなら取り付け・設定から。半組はソケットはんだ付け', url: products[2].productUrl },
+  { name: 'Berkut51', status: '別系統 / 在庫なし・試算対象外', layout: 'オーソリニア / 一体型・可動する左右キー部', keys: '48※', switches: 'MX / ALPS（商品記載）※', pointer: '中央トラックボール。ボールは別売', work: '組立済みの選択肢あり。FFCケーブルと可動部の取り扱いに注意', url: 'https://te9no.booth.pm/items/8144882' },
+  { name: 'SparAkasha', status: 'Ananta以前のモデル / 頒布状況要確認', layout: 'Lotus / 分割・通常ピッチ', keys: '46', switches: 'MX / Choc V2', pointer: 'MeKaBuモジュールを追加', work: 'MXはソケット、Choc V2は直接はんだ付け。LiPoを用意', url: guide('10sparakasha') },
+  { name: 'Geacon', status: '過去の設計 / 頒布状況要確認', layout: 'GRIN / 一体型・JIS/US', keys: '62', switches: 'MX', pointer: '34mmトラックボール', work: 'はんだ付け・スタビライザー調整・組立・設定', url: guide('31geacon') },
+  { name: 'GeaconSolstice', status: '過去の設計 / 頒布状況要確認', layout: 'GRIN / 分割・JIS/US', keys: '63 US / 64 JIS', switches: 'MX / Choc V2', pointer: '34mmトラックボール・スティック', work: '配列とスイッチ方式を決めて、はんだ付け・組立・設定', url: guide('32geaconsolstice') },
+  { name: 'Solkatstice', status: '過去の試作・設計 / 頒布状況要確認', layout: '40キーの一体型（配置はガイド写真参照）', keys: '40', switches: 'MX', pointer: '25mmトラックボール', work: 'はんだ付け・組立。基板の修正済み箇所の確認が必要', url: guide('30solkatstice') },
+  { name: 'MaRiMo', status: '補助入力デバイス / 頒布状況要確認', layout: '6キー＋モジュール。文字入力用本体とは別用途', keys: '6', switches: 'Choc V2', pointer: 'MeKaBuモジュールを追加。同種の同時使用に制限', work: 'はんだ付け・LiPo・スロットに合わせた設定', url: guide('11marimo') },
+  { name: 'CornixTP', status: 'Cornix用拡張 / 本体ではありません', layout: 'Cornixに組み合わせるトラックパッド', keys: '—', switches: '—（本体側の仕様を確認）', pointer: 'トラックパッド', work: 'モジュール組立と、左右Cornixを含むファームウェア設定', url: guide('23cornixtp') },
+];
+const customization = [
+  { name: 'GeaconPolaris', url: products[0].productUrl, items: [
+    ['ケース・色', 'ケース付き構成を選択可能。標準アクセントはゴールドのPETG。別色・金属アクセントは別売品を確認。本体ケースの色指定は注文前に相談。'],
+    ['スイッチ・キーキャップ', 'Choc V2用ソケットで差し替え可能。17mmピッチ対応のMX型十字ステムのキーキャップが必要。通常幅のMXキーキャップなら何でも使えるわけではありません。'],
+    ['配列・プレート', 'キーの物理位置はGRINで固定。文字・機能の割り当ては変更可能。アクセントプレートを替えてもLotusやJISの物理配列にはなりません。'],
+    ['ポインター・OLED', '左はエンコーダ・トラボ・スティック＋エンコーダ。右はトラパ・トラボ・IQS。OLED（小型表示画面）に対応。IQSはPolaris用を選択。'],
+    ['後からできること', '対応モジュール、キーキャップ、同規格スイッチ、アクセントの交換。モジュール交換にはハウジング・ファームウェアの変更が必要な場合があります。'],
+  ] },
+  { name: 'SparAkashaAnanta', url: products[1].productUrl, items: [
+    ['ケース・色', 'ケース付き構成、または公開データを印刷して用意。印刷時の色変更は可能ですが、販売キットの色・材質の指定可否は注文前に確認。'],
+    ['スイッチ・キーキャップ', 'MX / Choc V2 / ALPSから最初に選択。MXは別売ソケット、Choc V2・ALPSは直接はんだ付け。後から別規格へ変更する場合は再作業とプレート適合の確認が必要。'],
+    ['配列・プレート', '物理位置はLotusで固定。入力する文字・機能の割り当ては変更可能。スイッチ支持用プレートは採用スイッチに合わせて確認。'],
+    ['ポインター・OLED', '左右ともトラボ・エンコーダ・スティック＋エンコーダ・1キー・トラパ。通常モジュールとは別に左右IQSを追加可能。IQSを載せる側はOLEDを付けません。標準組立オプションのOLEDは希望連絡が必要。'],
+    ['後からできること', '対応モジュールとIQSの追加・交換。ただしPCと直接通信しない側（Peripheral）のトラボ／トラパ／スティック＋IQSはサポート外。両側を自由に組み合わせられるわけではありません。'],
+  ] },
+  { name: 'MeKaBu', url: products[2].productUrl, items: [
+    ['ケース・色', '再販ページでは本体色がインディゴパープルへ変更。自由な色指定とは別です。購入者限定の有料ケースデータで印刷する場合はデータ代＋印刷費を計上。'],
+    ['スイッチ・キーキャップ', 'Choc V2用ソケットで差し替え可能。キーキャップは17mmピッチ対応品。MXスイッチ本体を差し込めるという意味ではありません。'],
+    ['配列・プレート', '物理位置は格子状で固定。入力する文字・機能の割り当ては変更可能。別配列へ変換するプレートはここでは案内していません。'],
+    ['ポインター・OLED', '左右のモジュールを交換可能。ケース付きキットはエンコーダ1個・トラボ1個付き。OLED追加時は対応バッテリーカバー、配線、ファームウェアを確認。'],
+    ['後からできること', 'モジュール、同規格スイッチ、キーキャップの交換。追加OLEDや別サイズのボールは、部品・ケース・設定をセットで確認。IQSは本ページのMeKaBu対応選択肢には含めていません。'],
+  ] },
+];
+---
+<!doctype html>
+<html lang="ja">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex, nofollow" /><title>はじめての1台を選ぶ / TEST — なれはてぷれいぐらうんど</title><meta name="description" content="配列の違い、製品比較、カスタマイズ、必要部品を含む推奨構成。自作キーボードを初めて選ぶための案内。" /><link rel="icon" href={`${base}favicon.png`} /></head>
+<body>
+  <a class="skip" href="#choose-main">本文へ</a>
+  <header><a href={sim}>✳ なれはてぷれいぐらうんど</a><span class="badge">TEST / 選び方の試作</span></header>
+  <main id="choose-main">
+    <section class="hero">
+      <p class="eyebrow">YOUR FIRST KEYBOARD</p>
+      <h1>自分の手と、<br />いつもの作業から選ぼう。</h1>
+      <p class="lead">配列の名前を知らなくても大丈夫。<br />「どう打ちたいか」「何を変えたいか」「どこまで作るか」で、最初の1台を探します。</p>
+      <nav aria-label="選び方の目次"><a href="#layouts">配列の違い</a><a href="#comparison">製品を比較</a><a href="#customize">変えられること</a><a class="primary" href="#starter">はじめての推奨構成 ↓</a></nav>
+      <p class="fine">{referenceDate} 確認版。本ページの推奨は選び方の一例です。手への適合・疲れにくさ・在庫を保証するものではありません。</p>
+    </section>
+
+    <section id="layouts">
+      <p class="eyebrow">01 / FIT & FEEL</p><h2>まず見るのは、キーの並び方。</h2>
+      <p>ここでいう「配列」は、キーの<strong>物理的な位置</strong>です。押したときに出る文字・機能を変える「キー割り当て」とは別。設定だけでキーの位置や間隔は変わりません。</p>
+      <div class="cards">
+        <article><span class="tag">Geacon系</span><h3>GRIN：横の並びが弧を描く</h3><svg viewBox="0 0 250 95" role="img" aria-label="横のキー列が緩やかな弧を描く概念図"><path d="M15 18 Q125 65 235 18 M15 42 Q125 89 235 42 M15 66 Q125 113 235 66" fill="none" stroke="currentColor" stroke-width="12" stroke-dasharray="17 7" /></svg><p>一般的な横列のずれを土台に、指の動きに沿う曲線を取り入れた考え方。Polarisでは17mmの狭い間隔にしています。</p><p class="check">試してほしいこと：横へ指を動かす感覚、親指キーへの届き方、隣のキーとの窮屈さ。</p><a href="https://note.com/policium/n/nc7ceb56d11fe">GRIN考案者の説明 ↗</a> / <a href="https://note.com/teporz/n/n9b268be20f19">Polarisの設計記録 ↗</a></article>
+        <article><span class="tag">SparAkasha系</span><h3>Lotus：指を開く形に合わせる</h3><svg viewBox="0 0 250 95" role="img" aria-label="指ごとのキーの並びが扇状に開く概念図">{[-2,-1,0,1,2].map((i)=><g transform={`translate(${125+i*39} ${Math.abs(i)*7}) rotate(${i*12} 0 85)`}>{[12,37,62].map(y=><rect x="-10" y={y} width="20" height="19" rx="3" fill="currentColor" />)}</g>)}</svg><p>手を自然に開いたときの指の位置を重視する考え方。Anantaでは通常ピッチと、複数のスイッチ方式を選べます。</p><p class="check">試してほしいこと：小指の列の角度、上下のキーへの届き方、選ぶスイッチの高さ。</p><a href="https://zenn.dev/te9no/articles/c1ca8fad8f47f6">SparAkasha設計者の説明 ↗</a></article>
+        <article><span class="tag">MeKaBu</span><h3>格子状：縦と横をそろえる</h3><svg viewBox="0 0 250 95" role="img" aria-label="キーが格子状に並ぶ概念図">{[0,1,2].flatMap(r=>[0,1,2,3,4,5].map(c=><rect x={27+c*33} y={10+r*27} width="23" height="20" rx="3" fill="currentColor" />))}</svg><p>オーソリニアは、縦と横にキーがそろう並び方。MeKaBuは左右のモジュールを付け替えながら使い方を変えられます。</p><p class="check">試してほしいこと：普通のキーボードとの指運びの違い、17mmの間隔、モジュールまでの距離。</p><a href="https://modulable-keyboard-developer.github.io/">公式の製品情報 ↗</a></article>
+      </div>
+      <p class="fine">図は並び方を説明する模式図です。実機のキー数・縮尺・正確な位置は表していません。GRIN・Lotusという名前だけで手の大きさへの適合は判断できません。</p>
+      <div class="callout"><h3>「自分の用途に合う？」を確かめる3つの質問</h3><ol><li><strong>文章・コードを書くことが多い？</strong> 普段使う記号、数字、ショートカットを列挙しましょう。46キーでは、1つのキーに複数の役割を持たせる「レイヤー」の使い方も確認します。</li><li><strong>ポインター操作をキーボードの近くで行いたい？</strong> トラボはボールを回す、トラパは指を滑らせる方式。画像編集などの細かな操作も含め、普段のマウスと比較して試してください。</li><li><strong>工作も楽しみたい？ まず使い始めたい？</strong> はんだ付けの量はキット構成で変わります。組立済みでもスイッチ・キーキャップの装着、接続、キー割り当ての確認は残ります。</li></ol><p>可能なら実機で試打し、無理に手を広げず外側・上段・親指のキーに届くか確認してください。写真から「手が小さい人向け」などとは断定しません。</p></div>
+    </section>
+
+    <section id="comparison">
+      <p class="eyebrow">02 / COMPARE</p><h2>製品の違いを、ひとつの表に。</h2>
+      <p>まずは試算できる3製品を比較し、ほかのモデルは用途・世代を分けて見られます。<strong>「過去の設計」は販売終了の意味ではありません。</strong>現行／終売を確認できない製品には「頒布状況要確認」と記載しています。在庫表示も参照日時点です。</p>
+      <div class="table-wrap" role="region" aria-label="製品比較表（横にスクロールできます）" tabindex="0"><table><caption>製品比較 — キー数は本体のメインスイッチ数。モジュールの追加キーなどは含めません。</caption><thead><tr><th scope="col">製品・区分</th><th scope="col">物理配列</th><th scope="col">キー数</th><th scope="col">スイッチ</th><th scope="col">ポインティング</th><th scope="col">想定難易度：残る作業で比較</th></tr></thead><tbody>{comparison.map((p)=><tr><th scope="row"><a href={p.url}>{p.name} ↗</a><small>{p.status}</small></th><td>{p.layout}</td><td>{p.keys}</td><td>{p.switches}</td><td>{p.pointer}</td><td>{p.work}</td></tr>)}</tbody></table></div>
+      <p class="fine">※Berkut51は商品名の「51」と、ガイドのメインスイッチ48個を区別しています。商品ページはMX/ALPS対応、既存ガイドの部品表はMX構成です。ALPSの取り付け方法・必要数は購入前に販売者へ確認してください。難易度は技能の点数ではなく、作業範囲の目安です。</p>
+      <p><a class="button" href={sim}>3製品の費用を試算する →</a></p>
+    </section>
+
+    <section id="customize">
+      <p class="eyebrow">03 / MAKE IT YOURS</p><h2>変えられること。先に決めること。</h2>
+      <p>ケースの色、打鍵感、操作方法を別々に考えると、理想の1台を想像しやすくなります。ここではシミュレータ対象の3製品を整理しました。</p>
+      {customization.map((p)=><details class="custom"><summary>{p.name}<span>カスタマイズ一覧を開く</span></summary><dl>{p.items.map(([title,detail])=><div><dt>{title}</dt><dd>{detail}</dd></div>)}</dl><a href={p.url}>販売構成・追加オプションを確認 ↗</a></details>)}
+      <p class="fine">交換作業はUSBと電池を外して行います。モジュールの共通コネクタが付いていても、全機種・全構成での動作を意味しません。元のケース、プレート、ファームウェアとの適合を確認してください。</p>
+    </section>
+
+    <section id="starter" class="starter">
+      <p class="eyebrow">04 / START HERE</p><h2>はじめてなら、工作を減らす構成から。</h2>
+      <div class="starter-intro"><div><span class="tag">推奨例 / はんだ付けを任せたい方へ</span><h3>GeaconPolaris<br />完成済み本体 ＋ 左エンコーダ・右トラボ</h3><p>本体とモジュールの組立を依頼し、スイッチ・キーキャップの装着と設定から始める例です。低いChoc V2スイッチ、17mmキーキャップ、取り替えられる単4形充電池で揃えます。</p><p>配列の相性や価格の安さを保証する推奨ではありません。GRINが手に合うかを確認してから選んでください。キーキャップは無刻印のため、印字を見ながら入力したい方は別構成の相談をおすすめします。</p></div><div class="budget"><span>部品・組立代・充電器込み / 税込参照</span><strong>{yen(starterSubtotal)}</strong><span>＋ 送料の仮予算 {yen(starterShippingBudget)}</span><p>予算例の合計 <b>{yen(starterBudget)}</b></p><small>送料は実額ではありません。<br />工具・USBケーブル・PCは手持ち前提。</small></div></div>
+      <div class="table-wrap" role="region" aria-label="推奨構成の購入内訳（横にスクロールできます）" tabindex="0"><table class="recipe"><caption>必要数と購入単位を合わせた内訳 / {referenceDate}確認</caption><thead><tr><th scope="col">揃えるもの</th><th scope="col">買う数量・条件</th><th scope="col">税込参照価格</th></tr></thead><tbody>{starterItems.map((item)=><tr><th scope="row"><a href={item.url}>{item.label} ↗</a>{item.note && <small>{item.note}</small>}</th><td>{item.quantity}</td><td>{yen(item.amount)}</td></tr>)}</tbody><tfoot><tr><th scope="row" colspan="2">商品代合計（送料を除く）</th><td>{yen(starterSubtotal)}</td></tr><tr><th scope="row" colspan="2">全購入先の送料：仮予算</th><td>{yen(starterShippingBudget)}</td></tr><tr><th scope="row" colspan="2">予算例の合計</th><td>{yen(starterBudget)}</td></tr></tfoot></table></div>
+      <div class="callout"><h3>注文前に、ここだけは確認</h3><ol><li><strong>本体とサポート用「100円」110個を同時購入。</strong> 希望を「Polaris本体完成済み」と連絡します。モジュール2個の組立用Aは別途10個分。注文後すぐ、左エンコーダ・右トラボに適用することを連絡してください。同じカートで数量をまとめる場合も用途の内訳を明記します。</li><li><strong>写真に写る全部が本体に付属するわけではありません。</strong> 上の内訳でスイッチ46個、キャップ46個、電池2本以上、モジュール2個を揃えます。ソケット・ケース・標準アクセントは完成済み本体側に含みます。</li><li><strong>通信できるUSB-Cケーブルと取り付け工具を準備。</strong> 充電専用ケーブルでは書き込みできません。未所持の場合はシミュレータの「その他」に実額を追加。送料・在庫・納期は各購入先で再確認します。</li><li><strong>届いた後は装着・接続・設定。</strong> スイッチとキャップ、モジュールを取り付け、指定の充電池を装着します。左右に合うファームウェアとキー割り当てを確認。アルカリ乾電池など一次電池は使用しないでください。</li></ol></div>
+      <p><a class="button primary" href={`${sim}?preset=polaris-starter#configurator`}>この構成をシミュレータに読み込む →</a></p><p class="fine">参照価格を初期入力した新しい試算を開きます。注文・カート追加は行いません。送料2,000円は仮入力のままなので、実際の送料に直してください。製品を切り替えると参照入力はリセットされます。</p>
+    </section>
+    <footer><p>試作公開 / {referenceDate}更新<br />販売価格・在庫・組立範囲は各商品ページと販売者の案内を優先してください。</p><a href={sim}>価格シミュレータへ戻る →</a></footer>
+  </main>
+</body>
+<style>
+  :root{font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif;color:#243c36;background:#f6f6ef;font-synthesis:none}*{box-sizing:border-box}body{margin:0}a{color:#315c4b;text-underline-offset:4px}a:hover{color:#8b5d22}:focus-visible{outline:3px solid #a86d23;outline-offset:4px}header,main{max-width:1240px;margin:auto}header{display:flex;justify-content:space-between;align-items:center;padding:24px 28px;gap:18px;border-bottom:1px solid #d9dfd3}header>a{font-weight:bold;text-decoration:none;font-size:14px}main{padding:0 28px}section{padding:58px 0;border-bottom:1px solid #d9dfd3;scroll-margin-top:18px}.hero{padding-top:64px}.eyebrow{font:12px Consolas,monospace;letter-spacing:.15em;color:#577460;margin:0 0 18px}h1{font-size:clamp(32px,5vw,58px);line-height:1.35;letter-spacing:-.03em;margin:0 0 24px}h2{font-size:clamp(24px,3vw,34px);line-height:1.5;margin:0 0 20px}h3{font-size:20px;line-height:1.6;margin:16px 0}p,li,dd{font-size:14px;line-height:2}p{margin:16px 0}.lead{font-size:17px;color:#546259}nav{display:flex;gap:12px;flex-wrap:wrap;margin:30px 0}nav a,.button{display:inline-block;border:1px solid #becdbb;border-radius:8px;background:#fff;padding:13px 19px;text-decoration:none;font-weight:bold;font-size:14px}nav a.primary,.button.primary{background:#294d3c;color:#fff;border-color:#294d3c}nav a.primary:hover,.button.primary:hover{background:#3d614a;color:#fff}.badge,.tag{display:inline-block;font-size:11px;border:1px solid #cbd7be;border-radius:5px;padding:5px 9px;color:#526347;background:#f0f4e7}.fine{font-size:12px;color:#617065;line-height:1.9}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:30px 0 15px}.cards article{padding:24px;background:#fff;border:1px solid #d9dfd3;border-radius:12px}.cards h3{font-size:18px}.cards a{font-size:11px}.cards svg{width:100%;height:100px;color:#738b4a;background:#f5f7ef;border-radius:6px;padding:8px}.check{font-size:12px;border-top:1px solid #e3e6de;padding-top:14px;color:#516448}.callout{background:#ebf0e4;border-left:4px solid #789354;padding:16px 26px;border-radius:6px;margin:24px 0}.callout h3{margin-top:4px}.callout ol{padding-left:24px}.callout li{padding:6px 0}.table-wrap{overflow-x:auto;border:1px solid #d9dfd3;border-radius:10px;background:white;margin-top:24px}table{border-collapse:collapse;width:100%;min-width:1050px;font-size:12px;line-height:1.8;text-align:left}caption{text-align:left;padding:16px;color:#5a695e;background:#f0f4e8;font-size:12px}th,td{padding:16px;border-bottom:1px solid #e1e6dc;vertical-align:top}thead{background:#eaf0df;font-size:12px}thead th{white-space:nowrap}tbody th{min-width:175px}td:nth-child(2){min-width:150px}td:nth-child(5),td:nth-child(6){min-width:210px}small{display:block;font-size:11px;font-weight:normal;color:#65705f;line-height:1.8;margin-top:7px}.custom{border:1px solid #d5dfca;background:#fff;border-radius:10px;margin:14px 0;padding:0 24px 20px}.custom:not([open]){padding-bottom:0}summary{cursor:pointer;font-weight:bold;padding:23px 0;line-height:1.6}summary span{font-size:12px;font-weight:normal;color:#65705f;margin-left:18px}dl{margin:0 0 20px}dl>div{display:grid;grid-template-columns:160px 1fr;border-top:1px solid #e1e6dc;padding:16px 0;gap:20px}dt{font-size:13px;font-weight:bold}dd{margin:0}.custom>a{font-size:12px}.starter-intro{display:grid;grid-template-columns:1.5fr 1fr;gap:38px;align-items:center}.starter-intro h3{font-size:24px}.budget{background:#294d3c;border-radius:14px;padding:34px;color:#fff}.budget>span{display:block;font-size:12px;line-height:1.8}.budget>strong{display:block;font: bold 46px Consolas,monospace;margin:18px 0}.budget small{color:#d6e2cc}.budget p{border-top:1px solid #69826b;padding-top:20px}.budget b{font-size:24px;display:block}.recipe{min-width:650px}.recipe th{width:48%}.recipe td:last-child{white-space:nowrap;text-align:right}.recipe tfoot{background:#f0f4e8;font-weight:bold}.recipe tfoot th{width:auto}footer{display:flex;justify-content:space-between;gap:20px;align-items:center;padding:30px 0}footer p,footer a{font-size:12px}.skip{position:absolute;top:-80px;left:10px;background:white;padding:15px;z-index:10}.skip:focus{top:10px}
+  @media(max-width:850px){.cards{grid-template-columns:1fr}.cards article{padding:22px}.cards svg{max-width:330px;display:block}.starter-intro{grid-template-columns:1fr;gap:12px}.budget>strong{font-size:40px}}
+  @media(max-width:540px){header{padding:18px 16px}header>a{font-size:11px}.badge{font-size:9px}main{padding:0 16px}section{padding:36px 0}.hero{padding-top:40px}.lead{font-size:15px}nav{display:grid;grid-template-columns:1fr 1fr;gap:8px}nav a{padding:12px 9px;font-size:12px}nav a:last-child{grid-column:1/-1;text-align:center}summary span{display:block;margin:8px 0 0}dl>div{grid-template-columns:1fr;gap:8px}.custom{padding-left:18px;padding-right:18px}.callout{padding:15px 18px}.budget{padding:25px}footer{display:block}}
+  @media print{header,nav,.button{display:none}body{background:#fff}section{break-inside:avoid;padding:20px 0}.table-wrap{overflow:visible}table{min-width:0;font-size:9px}th,td{padding:6px;min-width:0!important}.cards{grid-template-columns:repeat(3,1fr)}.cards article{padding:12px}a{color:inherit}#comparison{break-inside:auto}}
+</style>
