@@ -23,7 +23,11 @@ export const modules = [
   { id: 'joy', name: 'スティック ＋ エンコーダ', detail: 'スティックと回転操作', price: 3500, url: 'https://te9no.booth.pm/items/8375543' },
 ];
 
-export const rightModule = modules.find((m) => m.id === 'tb');
+export const rightModules = [
+  { id: 'tpd', name: 'トラックパッド', detail: 'トラパ・指でポインター操作', price: 4500, url: 'https://te9no.booth.pm/items/7840306', note: 'ハウジング付属。参照日時点では在庫なし。入荷状況を商品ページで確認してください。' },
+  { ...modules.find((m) => m.id === 'tb'), detail: 'トラボ・ボールでポインター操作', note: '20mmボール・ハウジング付属。' },
+  { id: 'iqs', name: 'IQSトラックパッド', detail: 'IQS・複数指のジェスチャ', price: 9000, url: 'https://te9no.booth.pm/items/8375474', note: '「GeaconPolaris用」を選択。FFCケーブル・ハウジング・モジュールカバー付属。' },
+];
 
 export const yen = (value) => `¥${value.toLocaleString('ja-JP')}`;
 
@@ -38,18 +42,19 @@ export function parseAmount(raw) {
 export function estimate(state) {
   const assembly = assemblies.find((x) => x.id === state.assembly) ?? assemblies[3];
   const left = modules.find((x) => x.id === state.leftModule) ?? modules[0];
+  const right = rightModules.find((x) => x.id === state.rightModule) ?? rightModules[1];
   // Defaults come from the linked BOOTH kits. Explicitly cleared prices stay unknown.
-  const amounts = { left: left.price, right: rightModule.price, balls: 0, ...state.amounts };
+  const amounts = { left: left.price, right: right.price, balls: 0, ...state.amounts };
   const owned = state.owned ?? {};
-  const balls = left.id === 'tb' ? 2 : 1;
+  const balls = Number(left.id === 'tb') + Number(right.id === 'tb');
   const definitions = [
     ...(!assembly.hasCase ? [{ id: 'case', label: 'ケース・印刷部品一式', quantity: '1式', url: catalog.caseUrl, shop: '自分で用意' }] : []),
     { id: 'left', label: `左：${left.name}モジュール`, quantity: '1個', url: left.url, shop: 'なれはてぷれいぐらうんど' },
-    { id: 'right', label: '右：トラックボールモジュール', quantity: '1個', url: rightModule.url, shop: 'なれはてぷれいぐらうんど' },
+    { id: 'right', label: `右：${right.name}モジュール${right.id === 'iqs' ? '（GeaconPolaris用）' : ''}`, quantity: '1個', url: right.url, shop: 'なれはてぷれいぐらうんど' },
     { id: 'switches', label: 'Choc V2互換スイッチ', quantity: '46個', shop: '別途用意' },
     { id: 'keycaps', label: '17mmピッチ用キーキャップ', quantity: '46個', shop: '別途用意' },
     { id: 'batteries', label: '単4形Ni-MH充電池', quantity: '2個', shop: '別途用意' },
-    { id: 'balls', label: '別サイズのボール・追加部品', quantity: `${balls}セット分`, shop: '標準20mmボールはモジュールに同梱' },
+    ...(balls ? [{ id: 'balls', label: '別サイズのボール・追加部品', quantity: `${balls}セット分`, shop: '標準20mmボールはトラックボールモジュールに同梱' }] : []),
     { id: 'shipping', label: '全購入先の送料', quantity: '合計', shop: '各店舗で確認' },
   ];
   const rows = [
@@ -64,21 +69,23 @@ export function estimate(state) {
     ...(!assembly.hasCase ? ['ケース・印刷部品を別途準備する（印刷設備・材料・仕上げが必要）'] : []),
     ...(assembly.solder === 'all' ? ['本体の電子部品・ソケットをはんだ付けする'] : assembly.solder === 'sockets' ? ['本体のスイッチソケットをはんだ付けする'] : []),
     ...(assembly.solder !== 'none' ? ['本体ケースを組み立てる'] : []),
-    'モジュールを組み立て・取り付ける（ハウジングは付属。本体の組立オプションとは別）',
+    '選んだモジュールの商品説明に沿って組み立て・取り付ける（ハウジングは付属。本体の組立オプションとは別）',
+    ...(right.id === 'iqs' ? ['IQSはGeaconPolaris用ハウジングとモジュールカバーで取り付ける'] : []),
     'スイッチ46個・キーキャップ46個・指定の電池を用意する',
     '左右とモジュールに対応するファームウェア・初期設定・動作を確認する',
   ];
-  return { assembly, left, balls, rows, missing, total, work, complete: missing.length === 0 };
+  return { assembly, left, right, balls, rows, missing, total, work, complete: missing.length === 0 };
 }
 
 export function buildShoppingText(result) {
   return [
     `${catalog.product} 構成メモ（試算）`,
-    `本体：${result.assembly.name} / 左：${result.left.name} / 右：トラックボール`,
+    `本体：${result.assembly.name} / 左：${result.left.name} / 右：${result.right.name}`,
+    `右モジュール：${result.right.note}`,
     ...result.rows.map((r) => `・${r.label} × ${r.quantity}：${r.owned ? '手持ちを使う（追加購入なし）' : r.amount === null ? '金額未入力・要確認' : yen(r.amount)}${r.url ? `\n  ${r.url}` : ''}`),
     `${result.complete ? '入力額による費用の目安' : '入力済み小計（総額未確定）'}：${yen(result.total)}`,
     ...(result.missing.length ? [`未入力：${result.missing.map((r) => r.label).join('、')}`] : []),
-    `BOOTH参照日：${catalog.referenceDate}。モジュールは組立キット価格。標準20mmボール・ハウジングはモジュールに同梱。`,
+    `BOOTH参照日：${catalog.referenceDate}。モジュール価格は各商品ページを参照。ハウジング付属。${result.balls ? '標準20mmボールはトラックボールモジュールに同梱。' : ''}`,
     '販売価格・在庫・同梱品は注文時に確認。工具・印刷設備・任意の追加品は、その他費用に入力しない限り含みません。',
     ...(result.assembly.price ? [`本体とサポート用「100円」を${result.assembly.supportUnits}個、同時購入し、希望構成を販売者に連絡してください。`] : []),
   ].join('\n');

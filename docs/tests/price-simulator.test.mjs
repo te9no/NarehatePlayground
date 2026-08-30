@@ -69,11 +69,35 @@ test('ownership removes a purchase cost but cannot remove shipping', () => {
   assert.equal(result.rows.find((r) => r.id === 'shipping').amount, 900);
 });
 
-test('left trackball adds a second set of ball parts; right always remains a trackball', () => {
+test('ball parts follow the trackball count on both sides', () => {
   const result = estimate({ ...complete, leftModule: 'tb' });
   assert.equal(result.balls, 2);
   assert.equal(result.rows.find((r) => r.id === 'balls').quantity, '2セット分');
   assert.match(result.rows.find((r) => r.id === 'right').label, /トラックボール/);
+  const leftOnly = estimate({ leftModule: 'tb', rightModule: 'tpd' });
+  assert.equal(leftOnly.balls, 1);
+  assert.equal(leftOnly.rows.find((r) => r.id === 'balls').quantity, '1セット分');
+  for (const rightModule of ['tpd', 'iqs']) {
+    const noBalls = estimate({ leftModule: 'enc', rightModule, amounts: { balls: '1200' } });
+    assert.equal(noBalls.balls, 0);
+    assert.equal(noBalls.rows.some((r) => r.id === 'balls'), false);
+    assert.equal(noBalls.total, rightModule === 'tpd' ? 38500 : 43000);
+    assert.equal(estimate({ rightModule, amounts: { balls: '-1' } }).missing.some((r) => r.id === 'balls'), false);
+  }
+});
+
+test('right trackpad and Polaris IQS use their own quote, link, and memo', () => {
+  for (const [rightModule, amount, item] of [['tpd', 4500, '7840306'], ['iqs', 9000, '8375474']]) {
+    const result = estimate({ rightModule });
+    const row = result.rows.find((r) => r.id === 'right');
+    assert.equal(row.amount, amount);
+    assert.equal(row.url, `https://te9no.booth.pm/items/${item}`);
+    assert.ok(buildShoppingText(result).includes(`右：${result.right.name}`));
+    assert.equal(buildShoppingText(result).includes('右：トラックボール'), false);
+    if (rightModule === 'iqs') assert.match(row.label, /GeaconPolaris用/);
+  }
+  assert.equal(estimate({ rightModule: 'iqs', owned: { right: true } }).total, 34000);
+  assert.ok(estimate({ rightModule: 'iqs', amounts: { right: '' } }).missing.some((r) => r.id === 'right'));
 });
 
 test('assembled body still needs modules and setup, but no body soldering', () => {

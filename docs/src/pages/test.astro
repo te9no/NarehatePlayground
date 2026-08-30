@@ -1,10 +1,10 @@
 ---
-import { assemblies, modules, rightModule, catalog, yen } from '../lib/price-simulator.mjs';
+import { assemblies, modules, rightModules, catalog, yen } from '../lib/price-simulator.mjs';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
 const extras = [
   { id: 'case', title: 'ケース・印刷部品', quantity: '一式', hint: 'ケースなし構成のみ。印刷材料・外注費などを入力。', link: catalog.caseUrl, linkText: 'ケースデータ' },
   { id: 'left', title: '左モジュール', quantity: '1個', hint: '選択した組立キットのBOOTH参照価格を自動入力。ハウジング付属。', link: modules[0].url, linkText: 'BOOTHの商品ページ', price: modules[0].price },
-  { id: 'right', title: '右トラックボールモジュール', quantity: '1個', hint: '組立キットのBOOTH参照価格。20mmボール・ハウジング付属。', link: rightModule.url, linkText: 'BOOTHの商品ページ', price: rightModule.price },
+  { id: 'right', title: '右モジュール', quantity: '1個', hint: '選択したモジュールのBOOTH参照価格を自動入力。対応するハウジング・同梱品を確認。', link: rightModules[1].url, linkText: 'BOOTHの商品ページ', price: rightModules[1].price },
   { id: 'switches', title: 'キースイッチ', quantity: '46個分', hint: 'Kailh Choc V2互換。ソケット46個は本体に付属。' },
   { id: 'keycaps', title: 'キーキャップ', quantity: '46個分', hint: 'MX型十字ステム対応・17mmピッチ用。' },
   { id: 'batteries', title: '電池', quantity: '2個分', hint: '単4形Ni-MH充電池、左右各1個。一次電池は不可。' },
@@ -37,7 +37,7 @@ const extras = [
         </div>
         <div class="product-visual" aria-hidden="true">
           <div class="orbit"></div>
-          <div class="keyboard"><div class="half left-half"><div class="keys">{Array.from({ length: 18 }).map(() => <i></i>)}</div><div class="knob" id="module-visual"></div><div class="thumbs"><i></i><i></i><i></i></div></div><div class="half right-half"><div class="keys">{Array.from({ length: 18 }).map(() => <i></i>)}</div><div class="ball"></div><div class="thumbs"><i></i><i></i><i></i></div></div></div>
+          <div class="keyboard"><div class="half left-half"><div class="keys">{Array.from({ length: 18 }).map(() => <i></i>)}</div><div class="knob" id="module-visual"></div><div class="thumbs"><i></i><i></i><i></i></div></div><div class="half right-half"><div class="keys">{Array.from({ length: 18 }).map(() => <i></i>)}</div><div class="ball" id="right-module-visual"></div><div class="thumbs"><i></i><i></i><i></i></div></div></div>
           <p>GEACON POLARIS <span>構成イメージ / 実際の形状とは異なります</span></p>
         </div>
       </section>
@@ -61,10 +61,11 @@ const extras = [
             <p class="included">ソケット46個は付属。ケース付き構成には標準のゴールド（PETG）アクセントプレートが付属します。</p>
           </section>
           <section class="panel">
-            <div class="section-heading"><span class="step">02</span><div><h2>操作を、自分に合わせる。</h2><p>BOOTHで確認した組立キット価格を自動入力。次のステップで修正できます。</p></div></div>
+            <div class="section-heading"><span class="step">02</span><div><h2>操作を、自分に合わせる。</h2><p>BOOTHで確認したモジュール価格を自動入力。次のステップで修正できます。</p></div></div>
             <fieldset><legend>左手のモジュール</legend><div class="module-options">{modules.map((m) => <label class="module-option"><input type="radio" name="leftModule" value={m.id} checked={m.id === 'enc'} /><span class="module-symbol" aria-hidden="true">{m.id === 'enc' ? '◉' : m.id === 'tb' ? '●' : '✣'}</span><strong>{m.name}</strong><small>{m.detail}</small><span class="module-price">{yen(m.price)}</span></label>)}</div></fieldset>
-            <div class="fixed-module"><span class="side-tag">右手</span><strong>トラックボール {yen(rightModule.price)}</strong><span>この製品では右手は固定です</span></div>
-            <p class="small">BOOTH参照日：{catalog.referenceDate}（自動更新ではありません）。販売元：<a href={catalog.moduleUrl} target="_blank" rel="noopener noreferrer">なれはてぷれいぐらうんど</a>。組立済みを希望する場合は1個につき＋500円（サポート用Aを5個）。希望する個数分を「その他の追加費用」に入力し、注文後すぐに適用するモジュールを販売者へ連絡してください。</p>
+            <fieldset class="right-modules"><legend>右手のモジュール</legend><div class="module-options">{rightModules.map((m) => <label class="module-option"><input type="radio" name="rightModule" value={m.id} checked={m.id === 'tb'} /><span class="module-symbol" aria-hidden="true">{m.id === 'tb' ? '●' : m.id === 'tpd' ? '▣' : '▤'}</span><strong>{m.name}</strong><small>{m.detail}</small><span class="module-price">{yen(m.price)}</span></label>)}</div></fieldset>
+            <p class="input-note" id="right-module-note">{rightModules[1].note}</p>
+            <p class="small">BOOTH参照日：{catalog.referenceDate}（自動更新ではありません）。販売元：<a href={catalog.moduleUrl} target="_blank" rel="noopener noreferrer">なれはてぷれいぐらうんど</a>。トラボ・エンコーダ・スティック＋エンコーダの組立済みオプションは1個につき＋500円（サポート用Aを5個）。希望する個数分を「その他の追加費用」に入力し、注文後すぐに適用するモジュールを販売者へ連絡してください。トラパ・IQSの組立状態は各商品ページを確認してください。</p>
           </section>
           <section class="panel">
             <div class="section-heading"><span class="step">03</span><div><h2>買い足すものを確認。</h2><p>単価ではなく、必要数分の合計額を入力してください。</p></div></div>
@@ -101,7 +102,7 @@ const extras = [
 </html>
 
 <script>
-  import { estimate, buildShoppingText, modules, yen } from '../lib/price-simulator.mjs';
+  import { estimate, buildShoppingText, modules, rightModules, yen } from '../lib/price-simulator.mjs';
   const form = document.querySelector<HTMLFormElement>('#configurator')!;
   const element = (id: string) => document.getElementById(id)!;
   const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
@@ -111,19 +112,24 @@ const extras = [
     const data = new FormData(form);
     const amounts = Object.fromEntries(['base', 'case', 'left', 'right', 'switches', 'keycaps', 'batteries', 'balls', 'shipping', 'other'].map((key) => [key, input(key).value]));
     const owned = Object.fromEntries(['case', 'left', 'right', 'switches', 'keycaps', 'batteries', 'balls'].map((key) => [key, data.has(`owned-${key}`)]));
-    result = estimate({ assembly: data.get('assembly'), leftModule: data.get('leftModule'), amounts, owned });
+    result = estimate({ assembly: data.get('assembly'), leftModule: data.get('leftModule'), rightModule: data.get('rightModule'), amounts, owned });
     document.querySelector<HTMLElement>('[data-extra="case"]')!.hidden = result.assembly.hasCase;
+    document.querySelector<HTMLElement>('[data-extra="balls"]')!.hidden = result.balls === 0;
     document.querySelector('[data-quantity="balls"]')!.textContent = `${result.balls}セット分`;
     document.querySelector('[data-quantity="left"]')!.textContent = `${result.left.name}・1個`;
     (element('source-left') as HTMLAnchorElement).href = result.left.url;
+    document.querySelector('[data-quantity="right"]')!.textContent = `${result.right.name}・1個`;
+    (element('source-right') as HTMLAnchorElement).href = result.right.url;
+    setText('right-module-note', result.right.note);
     element('module-visual').className = result.left.id === 'tb' ? 'ball' : 'knob';
+    element('right-module-visual').className = result.right.id === 'tb' ? 'ball' : 'pad';
     for (const [key, value] of Object.entries(owned)) input(key).disabled = value;
     for (const key of Object.keys(amounts)) {
       const row = result.rows.find((r) => r.id === key);
       const invalid = !!row && !row.owned && String(amounts[key] ?? '').trim() !== '' && row.amount === null;
       input(key).setAttribute('aria-invalid', String(invalid));
     }
-    setText('build-description', `${result.assembly.name}\n左：${result.left.name} / 右：トラックボール`);
+    setText('build-description', `${result.assembly.name}\n左：${result.left.name} / 右：${result.right.name}`);
     setText('total-label', result.complete ? '入力額による費用の目安' : '入力済み小計');
     setText('total', yen(result.total));
     setText('total-note', result.complete ? '送料を含む / 注文前に販売価格を再確認' : `あと${result.missing.length}項目の金額が必要です。総額はまだ確定していません。`);
@@ -151,10 +157,12 @@ const extras = [
     if ((event.target as HTMLInputElement).type === 'number') render();
   });
   form.addEventListener('change', (event) => {
-    if ((event.target as HTMLInputElement).name === 'leftModule') {
-      // Reset to the newly selected BOOTH kit, not an unrelated custom quote.
-      const selected = modules.find((m) => m.id === (event.target as HTMLInputElement).value)!;
-      input('left').value = String(selected.price); input('owned-left').checked = false;
+    const target = event.target as HTMLInputElement;
+    if (target.name === 'leftModule' || target.name === 'rightModule') {
+      // Only the changed side gets a new quote; preserve the other side's input.
+      const side = target.name === 'leftModule' ? 'left' : 'right';
+      const selected = (side === 'left' ? modules : rightModules).find((m) => m.id === target.value)!;
+      input(side).value = String(selected.price); input(`owned-${side}`).checked = false;
       input('balls').value = '0'; input('owned-balls').checked = false;
     }
     render();
@@ -168,6 +176,8 @@ const extras = [
 </script>
 
 <style>
+  .right-modules{margin-top:24px}#right-module-note{margin-top:16px}
+  .pad{position:absolute;bottom:10px;right:10px;width:40px;height:27px;border:3px solid #233d32;border-radius:5px;background:#c9dcb3;box-shadow:0 0 0 2px #a5baa0}
   .module-price{margin-top:12px;font-size:15px;font-weight:bold;color:var(--green);font-variant-numeric:tabular-nums}
   #printer-note{margin-bottom:20px}
   #shopping-rows :global(th), #shopping-rows :global(td){padding:15px 12px;border-bottom:1px solid var(--line);line-height:1.8}
