@@ -1,0 +1,101 @@
+---
+import { centralOptions, firmwareUrl, getFirmwareSet } from '../../lib/cornix-firmware-guide.mjs';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
+const initial = getFirmwareSet('tps43');
+const sourceRepo = 'https://github.com/te9no/zmk-keyboard-cornix';
+---
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="CornixトラパとMadulaの中央機器を選び、3台へ書き込むファームウェアと接続復旧の順序を確認するガイド。" />
+  <title>Cornixトラパ ファームウェアガイド / TEST</title>
+  <link rel="icon" href={`${base}favicon.png`} />
+</head>
+<body>
+  <a class="skip" href="#guide-main">本文へ</a>
+  <header><a href={`${base}test/`}>✳ なれはてぷれいぐらうんど</a><span>TEST / 試作公開</span></header>
+  <main id="guide-main">
+    <section class="hero">
+      <p class="eyebrow">CORNIX FIRMWARE GUIDE</p>
+      <h1>3台の役割を合わせて、<br />迷わず書き込む。</h1>
+      <p class="lead">Cornixトラパは、左右のキーボードと中央機器の3台で動きます。使う中央機器を選ぶと、必要なUF2ファイルと書き込み先を確認できます。</p>
+      <nav aria-label="ページ内目次"><a href="#choose">ファイルを選ぶ</a><a href="#write">通常の書き込み</a><a href="#recovery">接続をやり直す</a></nav>
+      <p class="notice">このページはファイルの選択と手順を案内します。ブラウザーから機器への書き込みや設定消去は行いません。</p>
+    </section>
+
+    <section class="topology" aria-labelledby="topology-title">
+      <p class="eyebrow">HOW IT CONNECTS</p><h2 id="topology-title">PCがつなぐ相手は、中央機器。</h2>
+      <div class="diagram" role="img" aria-label="Cornix左とCornix右が中央機器へ接続し、中央機器がパソコンへ接続する構成">
+        <div><b>Cornix 左</b><small>Peripheral</small></div><i aria-hidden="true">↔</i><div class="central"><b>中央機器</b><small>TPS43 または Madula</small></div><i aria-hidden="true">↔</i><div><b>Cornix 右</b><small>Peripheral</small></div><i class="to-pc" aria-hidden="true">→</i><div class="pc"><b>PC</b><small>中央機器をBluetooth登録</small></div>
+      </div>
+      <p>中央機器はTPS43かMadulaの<strong>どれか1台だけ</strong>を使います。複数の中央機器を同時に電源オンにしないでください。</p>
+    </section>
+
+    <section id="choose">
+      <p class="eyebrow">01 / CHOOSE</p><h2>使っている中央機器を選ぶ。</h2>
+      <p>左右に書くファイルは共通です。中央機器だけ、搭載しているポインティングデバイスに合わせます。</p>
+      <fieldset id="central-choice"><legend>中央機器</legend><div class="choices">
+        {centralOptions.map((option) => <label><input type="radio" name="central" value={option.id} checked={option.id === 'tps43'} /><strong>{option.name}</strong><small>{option.description}</small></label>)}
+      </div></fieldset>
+      <div class="file-card" aria-live="polite" aria-atomic="true">
+        <div class="card-heading"><div><p class="eyebrow">NORMAL FIRMWARE</p><h3 id="selected-title">{initial.central.name}で使う3ファイル</h3></div><a href={sourceRepo}>ソースを見る ↗</a></div>
+        <div class="table-wrap" tabindex="0" role="region" aria-label="通常ファームウェア一覧"><table><thead><tr><th scope="col">書き込み先</th><th scope="col">機器</th><th scope="col">ファイル</th></tr></thead><tbody id="normal-files">{initial.normal.map((row) => <tr><th scope="row">{row.role}</th><td>{row.device}</td><td><a href={firmwareUrl(row.filename)} download>{row.filename}</a></td></tr>)}</tbody></table></div>
+        <p class="fine">リンクはソースリポジトリのmainブランチに保存されたビルド済みファイルです。更新日と実機検証の状況はリポジトリで確認してください。</p>
+      </div>
+    </section>
+
+    <section id="write">
+      <p class="eyebrow">02 / WRITE</p><h2>通常の書き込みは、1台ずつ。</h2>
+      <ol class="steps">
+        <li><b>3つの通常ファームを先にダウンロード。</b><span>選んだ中央機器用、Cornix左用、Cornix右用が揃っているか、ファイル名を確認します。</span></li>
+        <li><b>対象の1台をUSBでPCへ接続。</b><span>通信できるUSBケーブルを使います。取り違えを防ぐため、ほかの機器は電源を切っておきます。</span></li>
+        <li><b>リセットボタンを素早く2回押す。</b><span>UF2を書き込めるUSBドライブがPCに表示されます。表示されない場合はコピーを進めず、ケーブルとブートローダーの手順を確認してください。</span></li>
+        <li><b>その機器に対応するUF2をコピー。</b><span>コピー後は自動的に再起動します。同じ手順を中央・左・右の3台で繰り返します。</span></li>
+        <li><b>3台の電源を入れ直して接続。</b><span>左右と中央機器の起動後、PCのBluetooth設定から中央機器を登録し、左右のキーとポインターを実際に試します。</span></li>
+      </ol>
+      <div class="callout"><b>通常の更新で接続設定は原則消えません。</b><p>ファームを書き直しても接続できない場合、すぐ全消去せず、まず電源・距離・PCのBluetooth登録を確認してください。</p></div>
+    </section>
+
+    <section id="recovery" class="recovery">
+      <p class="eyebrow">03 / RECOVERY</p><h2>設定を消して、最初からつなぎ直す。</h2>
+      <p class="warning"><b>この手順では、3台の接続登録、PCプロファイル、保存したキー設定などが消えます。</b><br />通常の書き込みとは別の復旧手順です。必要な設定を控え、下の6ファイルをすべて用意してから始めてください。</p>
+      <div class="table-wrap" tabindex="0" role="region" aria-label="設定消去と復帰に使うファームウェア一覧"><table><thead><tr><th scope="col">書き込み先</th><th scope="col">① 設定を消す</th><th scope="col">② 元に戻す</th></tr></thead><tbody id="recovery-files">{initial.recovery.map((row) => <tr><th scope="row">{row.role}<small>{row.device}</small></th><td><a href={firmwareUrl(row.reset)} download>{row.reset}</a></td><td><a href={firmwareUrl(row.normal)} download>{row.normal}</a></td></tr>)}</tbody></table></div>
+      <ol class="steps reset-steps">
+        <li><b>3台分の「設定を消す」と「元に戻す」を用意。</b><span>中央機器の種類と、左右を照合します。機種が分からない場合は、ここで止めて製作者へ確認してください。</span></li>
+        <li><b>3台へ、対応するSettings Resetを1台ずつ書く。</b><span>各機器をリセットボタン2回でUF2モードにし、設定を消すファイルをコピーします。起動して消去が終わるまで待ちます。</span></li>
+        <li><b>3台すべての消去が終わるまで、通常ファームへ戻さない。</b><span>途中で戻すと、接続情報が揃わない可能性があります。Settings ResetのままではBluetooth接続や入力はできません。</span></li>
+        <li><b>3台へ、対応する通常ファームを書き戻す。</b><span>再びUF2モードにし、表の「元に戻す」ファイルを中央・左・右へコピーします。</span></li>
+        <li><b>古い登録を削除し、中央機器をPCへ再登録。</b><span>3台の電源をほぼ同時に入れ直して待ち、PCに残る古いBluetooth登録を削除してからペアリングします。</span></li>
+        <li><b>左右のキーとポインターを確認。</b><span>改善しなければ消去を繰り返さず、症状と試した手順を記録して相談してください。</span></li>
+      </ol>
+      <details><summary>中央用Resetのファイル名と、検証状況</summary><p><code>cornix_tps43_settings_reset.uf2</code>は名前にtps43を含みますが、現在のXIAO BLEと同じ保存領域を使うTPS43 / Madula向けの共通Resetです。異なる基板やFlash配置には使わないでください。この全設定リセットによる復旧動作は、元タスク作成時点で実機未検証です。</p></details>
+    </section>
+
+    <section class="trouble"><p class="eyebrow">IF IT DOES NOT START</p><h2>古いRMKファームから移行する場合。</h2><p>現行構成も旧RMKもno-SoftDevice配置のため、通常はSoftDeviceの復元は不要です。書き込み後に起動しない場合は、むやみに別ファイルを試さず、ソースリポジトリの<a href={`${sourceRepo}/blob/main/bootloader/README.md`}>ブートローダー手順</a>を確認してください。</p></section>
+    <footer><p>試作公開 / ファームウェアのビルド成功と実機検証の完了は別です。書き込み前に対象機器とファイル名を再確認してください。</p><a href={`${base}test/`}>価格シミュレータへ戻る →</a></footer>
+  </main>
+</body>
+<script define:vars={{ centralOptions }}>
+  const firmwareBase = 'https://raw.githubusercontent.com/te9no/zmk-keyboard-cornix/main/firmware/zmk-keyboard-cornix/main/';
+  const peripherals = [
+    { role: 'Cornix 左', device: '左キーボード', normal: 'cornix_left_production.uf2', reset: 'cornix_left_settings_reset.uf2' },
+    { role: 'Cornix 右', device: '右キーボード', normal: 'cornix_right_production.uf2', reset: 'cornix_right_settings_reset.uf2' },
+  ];
+  const link = (file) => `<a href="${firmwareBase}${file}" download>${file}</a>`;
+  document.querySelector('#central-choice').addEventListener('change', (event) => {
+    const central = centralOptions.find((option) => option.id === event.target.value);
+    if (!central) return;
+    document.querySelector('#selected-title').textContent = `${central.name}で使う3ファイル`;
+    const normal = [{ role: '中央機器', device: central.device, normal: central.normal }, ...peripherals];
+    document.querySelector('#normal-files').innerHTML = normal.map((row) => `<tr><th scope="row">${row.role}</th><td>${row.device}</td><td>${link(row.normal)}</td></tr>`).join('');
+    const recovery = [{ role: '中央機器', device: `${central.device}（XIAO BLE）`, reset: 'cornix_tps43_settings_reset.uf2', normal: central.normal }, ...peripherals];
+    document.querySelector('#recovery-files').innerHTML = recovery.map((row) => `<tr><th scope="row">${row.role}<small>${row.device}</small></th><td>${link(row.reset)}</td><td>${link(row.normal)}</td></tr>`).join('');
+  });
+</script>
+<style>
+  :root{font-family:"Yu Gothic","Hiragino Kaku Gothic ProN",sans-serif;color:#203c36;background:#f5f5ee;font-synthesis:none;--green:#285a46;--line:#d6ded2;--muted:#5d6d64;--orange:#9c4b20}*{box-sizing:border-box}body{margin:0}a{color:var(--green);text-underline-offset:4px}:focus-visible{outline:3px solid #a76b20;outline-offset:4px}header,main{max-width:1120px;margin:auto}header{padding:22px 26px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);gap:16px}header a{font-weight:bold;text-decoration:none;font-size:13px}header span{font:10px Consolas,monospace;border:1px solid #ceb283;border-radius:5px;padding:6px 9px;color:#79521e}main{padding:0 26px}.skip{position:absolute;top:-100px;left:10px;background:#fff;padding:14px;z-index:10}.skip:focus{top:10px}section{padding:54px 0;border-bottom:1px solid var(--line);scroll-margin-top:18px}.hero{padding-top:65px}.eyebrow{font:11px Consolas,monospace;letter-spacing:.16em;color:#5b765e;margin:0 0 16px}h1{font-size:clamp(34px,5vw,58px);line-height:1.35;letter-spacing:-.035em;margin:0 0 23px}h2{font-size:clamp(25px,3.2vw,35px);line-height:1.5;margin:0 0 18px}h3{font-size:20px;line-height:1.6;margin:0}p,li{font-size:14px;line-height:2}.lead{font-size:17px;color:#4f6258;max-width:760px}nav{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0}nav a{background:#fff;border:1px solid #c6d2c2;border-radius:7px;padding:11px 16px;text-decoration:none;font-weight:bold;font-size:13px}.notice,.fine{font-size:12px;color:var(--muted)}.topology{padding-top:40px}.diagram{display:grid;grid-template-columns:1fr auto 1.2fr auto 1fr;gap:12px;align-items:center;margin:25px 0}.diagram div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;text-align:center}.diagram .central{background:#eaf2df;border-color:#9db38b}.diagram .pc{grid-column:3;position:relative;margin-top:20px}.diagram .to-pc{grid-column:3;transform:rotate(90deg);height:10px}.diagram b,.diagram small{display:block}.diagram small{font-size:10px;color:var(--muted);margin-top:7px;line-height:1.6}fieldset{border:0;padding:0;margin:26px 0}legend{font-weight:bold;font-size:13px;margin-bottom:12px}.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.choices label{position:relative;background:#fff;border:1px solid var(--line);border-radius:9px;padding:17px 40px 17px 17px;cursor:pointer}.choices label:has(input:checked){background:#edf4e4;border-color:#638251;box-shadow:inset 0 0 0 1px #638251}.choices input{position:absolute;right:14px;top:18px;accent-color:var(--green)}.choices strong,.choices small{display:block}.choices strong{font-size:14px}.choices small{font-size:11px;color:var(--muted);margin-top:7px}.file-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:24px}.card-heading{display:flex;justify-content:space-between;gap:20px;align-items:start;margin-bottom:18px}.card-heading>a{font-size:12px;white-space:nowrap}.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#fff}table{border-collapse:collapse;width:100%;min-width:670px;text-align:left;font-size:12px}th,td{padding:15px;border-bottom:1px solid #e2e7df;line-height:1.7}thead{background:#edf2e8;color:#526158}tbody th{width:145px}td:last-child{font-family:Consolas,monospace}.steps{list-style:none;padding:0;margin:28px 0;counter-reset:step}.steps li{counter-increment:step;display:grid;grid-template-columns:42px 230px 1fr;gap:15px;padding:20px 0;border-bottom:1px solid var(--line);align-items:start}.steps li::before{content:counter(step,decimal-leading-zero);font:13px Consolas,monospace;color:var(--green);background:#e9f0e2;border-radius:50%;width:36px;height:36px;display:grid;place-items:center}.steps b,.steps span{display:block}.steps span{font-size:13px;color:var(--muted);line-height:1.9}.callout{background:#e9f0e3;border-left:4px solid #6f8d5b;padding:18px 23px;border-radius:5px}.callout p{margin:5px 0 0;font-size:13px}.recovery{border-top:5px solid #d8b178}.warning{background:#fff1df;border:1px solid #e3b47d;border-radius:8px;padding:18px 20px;color:#5b3723}.reset-steps li::before{background:#fff0de;color:var(--orange)}details{background:#fff;border:1px solid var(--line);border-radius:8px;padding:0 20px;margin-top:25px}summary{cursor:pointer;font-weight:bold;padding:18px 0;font-size:13px}details p{font-size:12px;color:var(--muted)}code{overflow-wrap:anywhere}.trouble{padding-top:42px}footer{display:flex;justify-content:space-between;gap:25px;align-items:center;padding:30px 0}footer p,footer a{font-size:11px}footer p{color:var(--muted)}footer a{white-space:nowrap}
+  @media(max-width:720px){header,main{padding-left:16px;padding-right:16px}.hero{padding-top:42px}.lead{font-size:15px}.choices{grid-template-columns:1fr}.diagram{grid-template-columns:1fr auto 1fr;gap:7px}.diagram div{padding:14px 8px}.diagram .central{grid-column:3}.diagram>i:nth-of-type(2){display:none}.diagram>div:nth-of-type(3){grid-column:1;grid-row:2}.diagram .to-pc{display:block;grid-column:2;grid-row:2;transform:none;height:auto}.diagram .pc{grid-column:3;grid-row:2;margin:0}.steps li{grid-template-columns:38px 1fr;gap:10px}.steps li span{grid-column:2}.file-card{padding:17px}.card-heading{display:block}.card-heading>a{display:inline-block;margin-top:12px}footer{display:block}}
+</style>
