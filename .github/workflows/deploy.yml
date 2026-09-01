@@ -23,6 +23,7 @@ jobs:
         env:
           PUBLIC_SITE: https://te9no.github.io
           PUBLIC_BASE: /NarehatePlayground
+          PUBLIC_GA_MEASUREMENT_ID: ${{ vars.GA_MEASUREMENT_ID }}
 
   deploy:
     needs: build

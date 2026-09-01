@@ -1,4 +1,5 @@
 ﻿---
+import GoogleAnalytics from '../../components/GoogleAnalytics.astro';
 export async function getStaticPaths() {
   const modules = import.meta.glob('../../content/docs/guides/*.{md,mdx}', { eager: true });
   return Promise.all(Object.entries(modules).map(async ([file, module]) => {
@@ -21,6 +22,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title} | Narehate Playground</title>
     <link rel="icon" href={`${base}favicon.png`} type="image/png" />
+    <GoogleAnalytics />
     <style>
       :root { color-scheme: dark; --bg:#05070d; --ink:#f6f8ff; --muted:rgba(246,248,255,.68); --line:rgba(77,232,255,.24); --cyan:#4de8ff; --hot:#ff3d71; }
       * { box-sizing: border-box; }
