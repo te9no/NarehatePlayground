@@ -4,14 +4,39 @@ import SocialMeta from '../components/SocialMeta.astro';
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
 const guideModules = import.meta.glob('../content/docs/guides/*.{md,mdx}', { eager: true });
 
+const guideInfo = {
+  '10sparakasha': { group: 'archive', tag: 'Lotus / 分割', description: 'SparAkashaの組み立て手順。Ananta以前のモデルです。' },
+  '11marimo': { group: 'module', tag: '補助入力デバイス', description: '6キーと交換式モジュールを備えた入力デバイスの組み立て手順。' },
+  '20geaconpolaris': { group: 'keyboard', tag: 'GRIN / 分割', description: 'GeaconPolaris本体と、左右モジュールを組み立てるためのガイド。' },
+  '21berkut51': { group: 'keyboard', tag: '一体型 / トラックボール', description: '可動する左右キー部と中央トラックボールを備えたBerkut51のガイド。' },
+  '22sparakashaananta': { group: 'keyboard', tag: 'Lotus / 分割', description: '複数のスイッチ規格と交換式モジュールに対応するAnantaのガイド。' },
+  '23cornixtp': { group: 'module', tag: 'Cornix用拡張', description: 'Cornixにトラックパッドを追加するモジュールの組み立てと設定。' },
+  '30solkatstice': { group: 'archive', tag: '40キー / 一体型', description: '25mmトラックボールを備えた40キー試作モデルの記録。' },
+  '31geacon': { group: 'archive', tag: 'GRIN / 一体型', description: 'JIS・US配列と34mmトラックボールを備えたGeaconの記録。' },
+  '32geaconsolstice': { group: 'archive', tag: 'GRIN / 分割', description: 'Geaconを分割型に展開したモデルの組み立て記録。' },
+  '90firmwareguide': { group: 'module', tag: 'ZMK / ファームウェア', description: 'ファームウェアの選び方、書き込み、更新時の基本手順。' },
+};
+
 const guideCards = Object.entries(guideModules)
-  .map(([file, module], index) => {
+  .map(([file, module]) => {
     const filename = file.split('/').pop() ?? '';
     const slug = filename.replace(/\.(md|mdx)$/, '').toLowerCase().replace(/[^a-z0-9]+/g, '');
     const title = module.frontmatter?.title || filename.replace(/\.(md|mdx)$/, '');
-    return { href: `guides/${slug}/`, title, index: String(index + 1).padStart(2, '0') };
+    return { href: `${base}guides/${slug}/`, title, slug, ...guideInfo[slug] };
   })
-  .sort((a, b) => a.href.localeCompare(b.href));
+  .sort((a, b) => a.href.localeCompare(b.href))
+  .map((guide, index) => ({ ...guide, index: String(index + 1).padStart(2, '0') }));
+
+const guideGroups = [
+  { id: 'keyboard', title: 'キーボード本体', description: '配列やポインティングデバイスの違いから、作りたい一台を探せます。' },
+  { id: 'module', title: 'モジュール・設定', description: '追加デバイス、補助入力、ファームウェアの手順です。' },
+  { id: 'archive', title: '過去モデル・制作記録', description: '以前の設計や試作機の資料を残しています。頒布状況は各ページで確認してください。' },
+].map((group) => ({
+  ...group,
+  guides: guideCards
+    .filter((guide) => guide.group === group.id)
+    .map((guide, index) => ({ ...guide, index: String(index + 1).padStart(2, '0') })),
+}));
 ---
 
 <!doctype html>
@@ -44,6 +69,7 @@ const guideCards = Object.entries(guideModules)
         min-height: 100%;
         background: var(--bg);
         scroll-behavior: smooth;
+        scroll-padding-top: 6rem;
       }
 
       body {
@@ -169,14 +195,19 @@ const guideCards = Object.entries(guideModules)
         background: rgba(215, 255, 63, .12);
       }
 
+      .nav-links .nav-primary {
+        border-color: rgba(215, 255, 63, .62);
+        color: var(--acid);
+      }
+
       .hero {
         position: relative;
         display: grid;
         grid-template-columns: minmax(0, .94fr) minmax(380px, 1.06fr);
         gap: clamp(1.2rem, 4vw, 4rem);
         align-items: center;
-        min-height: calc(100vh - 80px);
-        padding: clamp(2rem, 6vw, 6rem) 0;
+        min-height: min(760px, calc(100vh - 80px));
+        padding: clamp(2rem, 5vw, 4.5rem) 0;
       }
 
       .hero-copy {
@@ -255,7 +286,7 @@ const guideCards = Object.entries(guideModules)
 
       .action {
         position: relative;
-        min-height: 9.5rem;
+        min-height: 7.2rem;
         overflow: hidden;
         border: 1px solid var(--line);
         border-radius: 26px;
@@ -269,7 +300,12 @@ const guideCards = Object.entries(guideModules)
 
       .action:nth-child(2) { animation-delay: -1.2s; }
       .action:nth-child(3) { animation-delay: -2.4s; }
-      .action:nth-child(4) { animation-delay: -3.6s; }
+
+      .action-primary {
+        grid-column: 1 / -1;
+        border-color: rgba(215, 255, 63, .64);
+        background: linear-gradient(135deg, rgba(21, 38, 31, .92), rgba(17, 29, 13, .72));
+      }
 
       .action::before {
         content: "";
@@ -299,15 +335,23 @@ const guideCards = Object.entries(guideModules)
       .action strong {
         position: relative;
         display: block;
-        margin-top: 2.4rem;
+        margin-top: 1.15rem;
         font-size: clamp(1.35rem, 3vw, 2.2rem);
         line-height: 1;
+      }
+
+      .action p {
+        position: relative;
+        margin: .7rem 0 0;
+        color: var(--muted);
+        font-size: .82rem;
+        line-height: 1.6;
       }
 
       .visual {
         position: relative;
         z-index: 1;
-        min-height: min(66vh, 720px);
+        min-height: min(58vh, 620px);
         border: 1px solid rgba(255, 255, 255, .16);
         border-radius: 42px;
         overflow: hidden;
@@ -346,28 +390,6 @@ const guideCards = Object.entries(guideModules)
         animation: spin 8s linear infinite;
       }
 
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: .8rem;
-        margin: 1.2rem 0 4rem;
-      }
-
-      .stat {
-        border: 1px solid var(--line);
-        border-radius: 22px;
-        padding: 1rem;
-        background: var(--panel);
-        backdrop-filter: blur(18px);
-      }
-
-      .stat b {
-        display: block;
-        color: var(--acid);
-        font-size: clamp(1.8rem, 5vw, 4rem);
-        line-height: .9;
-      }
-
       .section-title {
         margin: 0 0 1rem;
         font-size: clamp(2rem, 7vw, 6rem);
@@ -376,11 +398,42 @@ const guideCards = Object.entries(guideModules)
         text-transform: uppercase;
       }
 
+      .section-intro {
+        max-width: 50rem;
+        margin: 0 0 2.5rem;
+        color: var(--muted);
+        line-height: 1.8;
+      }
+
+      .guide-group {
+        margin-bottom: 4.5rem;
+      }
+
+      .guide-group-heading {
+        display: grid;
+        grid-template-columns: minmax(0, .55fr) minmax(18rem, 1fr);
+        gap: 2rem;
+        align-items: end;
+        margin-bottom: 1.2rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1.2rem;
+      }
+
+      .guide-group-heading h3 {
+        margin: 0;
+        font-size: clamp(1.45rem, 3vw, 2.2rem);
+      }
+
+      .guide-group-heading p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
       .guide-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: .9rem;
-        padding-bottom: 5rem;
       }
 
       .guide {
@@ -408,9 +461,41 @@ const guideCards = Object.entries(guideModules)
 
       .guide strong {
         display: block;
-        margin-top: 3rem;
+        margin-top: 1.4rem;
         font-size: 1.5rem;
         line-height: 1.1;
+      }
+
+      .guide-tag {
+        display: inline-block;
+        margin-top: 1rem;
+        color: var(--cyan);
+        font-family: "Cascadia Code", Consolas, monospace;
+        font-size: .72rem;
+      }
+
+      .guide-description {
+        margin: 1rem 0 0;
+        color: var(--muted);
+        font-size: .86rem;
+        line-height: 1.7;
+      }
+
+      .site-footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        align-items: center;
+        border-top: 1px solid var(--line);
+        padding: 2rem 0 3rem;
+        color: var(--muted);
+        font-size: .8rem;
+      }
+
+      .site-footer nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
       }
 
       .cursor-light {
@@ -448,16 +533,41 @@ const guideCards = Object.entries(guideModules)
           background-position: center;
         }
         .guide-grid { grid-template-columns: 1fr 1fr; }
+        .guide-group-heading { grid-template-columns: 1fr; gap: .5rem; }
       }
 
       @media (max-width: 640px) {
-        .shell { width: min(100% - 22px, 1480px); }
-        .nav { align-items: flex-start; }
-        .nav-links { display: none; }
-        .action-grid, .stats, .guide-grid { grid-template-columns: 1fr; }
-        h1 { font-size: clamp(3.35rem, 19vw, 7rem); letter-spacing: -.11em; }
+        .shell { width: min(100% - 24px, 1480px); }
+        .nav { align-items: center; gap: .5rem; padding: .7rem 0; }
+        .brand > span:last-child { display: none; }
+        .brand-mark { width: 2rem; }
+        .nav-links { flex: 1; min-width: 0; flex-wrap: nowrap; overflow: visible; justify-content: flex-end; gap: .3rem; }
+        .nav-links a { white-space: nowrap; padding: .5rem .6rem; font-size: .62rem; letter-spacing: .04em; }
+        .nav-links a:nth-last-child(-n+2) { display: none; }
+        .hero { gap: 1.25rem; padding: 1.5rem 0 2.8rem; }
+        .kicker { margin-bottom: .8rem; padding: .45rem .55rem; font-size: .62rem; letter-spacing: .1em; }
+        .action-grid, .guide-grid { grid-template-columns: 1fr; }
+        .action-grid { gap: .55rem; margin-top: 1.25rem; }
+        .action-primary { grid-column: auto; }
+        .action { min-height: 0; border-radius: 18px; padding: .9rem 1rem; animation: none; }
+        .action strong { margin-top: .65rem; font-size: 1.22rem; }
+        .action p { margin-top: .5rem; font-size: .76rem; }
+        h1 { font-size: clamp(2.9rem, 14.5vw, 4.2rem); letter-spacing: -.1em; }
         h1 .title-sub { font-size: .5em; letter-spacing: .015em; }
-        .visual { aspect-ratio: 4 / 3; border-radius: 28px; }
+        .lead { margin-top: 1rem; font-size: .9rem; line-height: 1.7; }
+        .visual { min-height: 0; aspect-ratio: 16 / 9; border-radius: 22px; }
+        .section-title { font-size: clamp(2.7rem, 15vw, 4rem); }
+        .section-intro { margin-bottom: 2rem; font-size: .86rem; }
+        .guide-group { margin-bottom: 2.8rem; }
+        .guide-group-heading { margin-bottom: .8rem; padding-top: .9rem; }
+        .guide-group-heading h3 { font-size: 1.35rem; }
+        .guide-group-heading p { font-size: .82rem; }
+        .guide { min-height: 0; border-radius: 18px; padding: 1rem; }
+        .guide strong { margin-top: .85rem; font-size: 1.18rem; line-height: 1.35; }
+        .guide-tag { margin-top: .7rem; }
+        .guide-description { margin-top: .65rem; font-size: .8rem; line-height: 1.65; }
+        .site-footer { display: block; }
+        .site-footer nav { margin-top: 1rem; }
       }
 
     </style>
@@ -470,10 +580,10 @@ const guideCards = Object.entries(guideModules)
     <header class="shell nav">
       <a class="brand" href={base}><span class="brand-mark"></span><span>Narehate Playground</span></a>
       <nav class="nav-links" aria-label="Primary">
+        <a class="nav-primary" href={`${base}test/choose/`}>はじめての方へ</a>
+        <a href={`${base}test/`}>価格を試す</a>
+        <a href="#guides">ガイド</a>
         <a href="https://te9no.booth.pm/">Booth</a>
-        <a href="https://note.com/teporz">Note</a>
-        <a href="https://zenn.dev/te9no">Zenn</a>
-        <a href="https://x.com/teporz">X</a>
       </nav>
     </header>
 
@@ -483,35 +593,49 @@ const guideCards = Object.entries(guideModules)
           <p class="kicker">CUSTOM KEYBOARD / HARDWARE / FIRMWARE</p>
           <h1 data-text={`NAREHATE
 PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
-          <p class="lead">基板、ケース、センサー、ファームウェアまで。作って、壊して、組み直した痕跡をそのまま並べる制作アーカイブ。</p>
+          <p class="lead">自分に合うキーボードを選び、必要な費用を確かめ、組み立てるところまで。製品比較とビルドガイドをひとつにまとめています。</p>
           <div class="action-grid" aria-label="Main links">
-            <a class="action" href="https://te9no.booth.pm/"><span>Booth</span><strong>頒布ページ</strong></a>
-            <a class="action" href="https://note.com/teporz"><span>Note</span><strong>制作ログ</strong></a>
-            <a class="action" href="https://zenn.dev/te9no"><span>Zenn</span><strong>技術メモ</strong></a>
-            <a class="action" href="https://x.com/teporz"><span>X</span><strong>@teporz</strong></a>
+            <a class="action action-primary" href={`${base}test/choose/`}><span>01 / CHOOSE</span><strong>はじめての方へ</strong><p>配列、スイッチ、ポインティングデバイスの違いから製品を比較します。</p></a>
+            <a class="action" href={`${base}test/`}><span>02 / ESTIMATE</span><strong>価格を試す</strong><p>本体と部品を選び、必要な費用を確認します。</p></a>
+            <a class="action" href="#guides"><span>03 / BUILD</span><strong>組み立てる</strong><p>製品別の手順とファームウェア情報を探します。</p></a>
           </div>
         </div>
         <div class="visual" aria-label="Geacon Solstice visual panel"></div>
       </section>
 
-      <section class="stats" aria-label="Site stats">
-        <div class="stat"><b>{guideCards.length}</b><span>Build guides</span></div>
-        <div class="stat"><b>121</b><span>Image assets</span></div>
-        <div class="stat"><b>ZMK</b><span>Firmware notes</span></div>
-      </section>
-
       <section id="guides">
         <h2 class="section-title">Build Guides</h2>
-        <div class="guide-grid">
-          {guideCards.map((guide) => (
-            <a class="guide" href={guide.href}>
-              <small>{guide.index}</small>
-              <strong>{guide.title}</strong>
-            </a>
-          ))}
-        </div>
+        <p class="section-intro">製品本体、追加モジュール、過去モデルに分けて掲載しています。最初の一台を検討中の場合は、先に「はじめての方へ」で違いを確認してください。</p>
+        {guideGroups.map((group) => (
+          <section class="guide-group" aria-labelledby={`group-${group.id}`}>
+            <div class="guide-group-heading">
+              <h3 id={`group-${group.id}`}>{group.title}</h3>
+              <p>{group.description}</p>
+            </div>
+            <div class="guide-grid">
+              {group.guides.map((guide) => (
+                <a class="guide" href={guide.href}>
+                  <small>{guide.index}</small>
+                  <strong>{guide.title}</strong>
+                  <span class="guide-tag">{guide.tag}</span>
+                  <p class="guide-description">{guide.description}</p>
+                </a>
+              ))}
+            </div>
+          </section>
+        ))}
       </section>
     </main>
+
+    <footer class="shell site-footer">
+      <span>Narehate Playground / Custom keyboard build guides</span>
+      <nav aria-label="External links">
+        <a href="https://te9no.booth.pm/">Booth</a>
+        <a href="https://note.com/teporz">Note</a>
+        <a href="https://zenn.dev/te9no">Zenn</a>
+        <a href="https://x.com/teporz">X</a>
+      </nav>
+    </footer>
 
     <script is:inline>
       const canvas = document.getElementById('particle-field');
