@@ -1,11 +1,14 @@
 const firmwareBase = 'https://raw.githubusercontent.com/te9no/zmk-keyboard-cornix/main/firmware/zmk-keyboard-cornix/main/';
 
 export const centralOptions = [
-  { id: 'tps43', name: 'TPS43 トラックパッド', device: 'Cornix TP Central', normal: 'cornix_tps43_production.uf2', description: 'Cornixトラパの標準構成' },
-  { id: 'trackball', name: 'Madula ＋ トラックボール', device: 'Madula Central', normal: 'madula_trackball.uf2', description: 'PMW3610トラックボール' },
-  { id: 'trackpoint', name: 'Madula ＋ トラックポイント', device: 'Madula Central', normal: 'madula_trackpoint.uf2', description: 'ADS1220 LPPSトラックポイント' },
-  { id: 'iqs', name: 'Madula ＋ IQSトラックパッド', device: 'Madula Central', normal: 'madula_iqs.uf2', description: 'IQS9151トラックパッド' },
+  { id: 'tps43', published: true, name: 'TPS43 トラックパッド', device: 'Cornix TP Central', normal: 'cornix_tps43_production.uf2', description: 'Cornixトラパの標準構成' },
+  { id: 'trackball', published: false, name: 'Madula ＋ トラックボール', device: 'Madula Central', normal: 'madula_trackball.uf2', description: 'PMW3610トラックボール' },
+  { id: 'trackpoint', published: false, name: 'Madula ＋ トラックポイント', device: 'Madula Central', normal: 'madula_trackpoint.uf2', description: 'ADS1220 LPPSトラックポイント' },
+  { id: 'iqs', published: false, name: 'Madula ＋ IQSトラックパッド', device: 'Madula Central', normal: 'madula_iqs.uf2', description: 'IQS9151トラックパッド' },
 ];
+
+// 販売開始時は対象構成のpublishedをtrueにする。非公開構成は生成HTMLやクライアントデータへ渡さない。
+export const publishedCentralOptions = centralOptions.filter((option) => option.published);
 
 export const peripheralFirmware = [
   { role: 'Cornix 左', device: '左キーボード', normal: 'cornix_left_production.uf2', reset: 'cornix_left_settings_reset.uf2' },
