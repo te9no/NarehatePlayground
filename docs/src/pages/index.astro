@@ -1,5 +1,6 @@
 ﻿---
 import GoogleAnalytics from '../components/GoogleAnalytics.astro';
+import SocialMeta from '../components/SocialMeta.astro';
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
 const guideModules = import.meta.glob('../content/docs/guides/*.{md,mdx}', { eager: true });
 
@@ -21,6 +22,7 @@ const guideCards = Object.entries(guideModules)
     <meta name="description" content="Custom keyboard build guides and hardware experiments." />
     <title>Narehate Playground</title>
     <link rel="icon" href={`${base}favicon.png`} type="image/png" />
+    <SocialMeta title="Narehate Playground" description="Custom keyboard build guides and hardware experiments." />
     <GoogleAnalytics />
     <style define:vars={{ heroImage: `url('${base}Polaris.jpg')` }}>
       :root {

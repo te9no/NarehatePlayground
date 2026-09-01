@@ -2,6 +2,7 @@
 import { assemblies, products, catalog, estimate, yen } from '../lib/price-simulator.mjs';
 import { moduleCatalog } from '../lib/simulator-catalog.mjs';
 import GoogleAnalytics from '../components/GoogleAnalytics.astro';
+import SocialMeta from '../components/SocialMeta.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
 const initial = estimate();
 const extraIds = ['caseData', 'case', 'left', 'right', 'iqsLeft', 'iqsRight', 'switches', 'keycaps', 'sockets', 'batteries', 'balls', 'moduleKeys'];
@@ -15,6 +16,7 @@ const extraIds = ['caseData', 'case', 'left', 'right', 'iqsLeft', 'iqsRight', 's
     <meta name="description" content="GeaconPolaris・SparAkashaAnanta・MeKaBuの構成・追加費用・購入リストを確認する価格シミュレータ。" />
     <title>価格シミュレータ / TEST — なれはてぷれいぐらうんど</title>
     <link rel="icon" href={`${base}favicon.png`} />
+    <SocialMeta title="価格シミュレータ / TEST — なれはてぷれいぐらうんど" description="GeaconPolaris・SparAkashaAnanta・MeKaBuの構成、追加費用、購入リストを確認する価格シミュレータ。" />
     <GoogleAnalytics />
   </head>
   <body>

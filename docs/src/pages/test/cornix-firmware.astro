@@ -1,6 +1,7 @@
 ---
 import { publishedCentralOptions, firmwareUrl, getFirmwareSet } from '../../lib/cornix-firmware-guide.mjs';
 import GoogleAnalytics from '../../components/GoogleAnalytics.astro';
+import SocialMeta from '../../components/SocialMeta.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
 const initial = getFirmwareSet(publishedCentralOptions[0].id);
 const hasCentralChoices = publishedCentralOptions.length > 1;
@@ -15,6 +16,7 @@ const sourceRepo = 'https://github.com/te9no/zmk-keyboard-cornix';
   <meta name="description" content="Cornixトラパの3台へ書き込むファームウェアと、接続復旧の順序を確認するガイド。" />
   <title>Cornixトラパ ファームウェアガイド / TEST</title>
   <link rel="icon" href={`${base}favicon.png`} />
+  <SocialMeta title="Cornixトラパ ファームウェアガイド / TEST" description="Cornixトラパの3台へ書き込むファームウェアと、接続復旧の順序を確認するガイド。" />
   <GoogleAnalytics />
 </head>
 <body>

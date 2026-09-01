@@ -3,6 +3,7 @@ import { products, referenceDate } from '../../lib/simulator-catalog.mjs';
 import { yen } from '../../lib/price-simulator.mjs';
 import { starterItems, starterSubtotal, starterShippingBudget, starterBudget } from '../../lib/beginner-build.mjs';
 import GoogleAnalytics from '../../components/GoogleAnalytics.astro';
+import SocialMeta from '../../components/SocialMeta.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '') + '/';
 const sim = `${base}test/`;
 const guide = (slug) => `${base}guides/${slug}/`;
@@ -44,7 +45,7 @@ const customization = [
 ---
 <!doctype html>
 <html lang="ja">
-<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex, nofollow" /><title>はじめての1台を選ぶ / TEST — なれはてぷれいぐらうんど</title><meta name="description" content="配列の違い、製品比較、カスタマイズ、必要部品を含む推奨構成。自作キーボードを初めて選ぶための案内。" /><link rel="icon" href={`${base}favicon.png`} /><GoogleAnalytics /></head>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><meta name="robots" content="noindex, nofollow" /><title>はじめての1台を選ぶ / TEST — なれはてぷれいぐらうんど</title><meta name="description" content="配列の違い、製品比較、カスタマイズ、必要部品を含む推奨構成。自作キーボードを初めて選ぶための案内。" /><link rel="icon" href={`${base}favicon.png`} /><SocialMeta title="はじめての1台を選ぶ / TEST — なれはてぷれいぐらうんど" description="配列の違い、製品比較、カスタマイズ、必要部品を含む推奨構成。自作キーボードを初めて選ぶための案内。" /><GoogleAnalytics /></head>
 <body>
   <a class="skip" href="#choose-main">本文へ</a>
   <header><a href={sim}>✳ なれはてぷれいぐらうんど</a><span class="badge">TEST / 選び方の試作</span></header>
