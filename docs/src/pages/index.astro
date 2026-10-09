@@ -377,14 +377,21 @@ const guideGroups = [
       }
       .solstice-control[data-dragging] { cursor: grabbing; }
       .solstice-control:focus-visible { outline: 2px solid #4de8ff; outline-offset: -6px; border-radius: 32px; }
-      .solstice-logo {
+      .solstice-art {
+        position: relative;
         width: 100%;
         height: 100%;
         min-height: 0;
-        object-fit: contain;
         pointer-events: none;
-        mix-blend-mode: screen;
+        isolation: isolate;
+        background: #000;
         transform: rotateX(var(--pitch, 0deg)) rotateY(var(--yaw, 0deg));
+      }
+      .solstice-logo {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
       }
       .solstice-tools {
         position: absolute;
@@ -651,7 +658,7 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
         </div>
         <div class="visual">
           <button class="solstice-control" type="button" aria-label="Solsticeくんを回す" aria-describedby="solstice-help" data-equinox-src={`${base}equinox.jpg`}>
-            <img class="solstice-logo" src={`${base}Polaris.jpg`} alt="" draggable="false" />
+            <span class="solstice-art"><img class="solstice-logo" src={`${base}Polaris.jpg`} alt="" draggable="false" /></span>
           </button>
           <div class="solstice-tools">
             <p id="solstice-help">ドラッグ・横スワイプで回転<br /><span class="solstice-status" role="status">回し続けると…？（矢印キーも対応）</span></p>
@@ -724,6 +731,7 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
     <script>
       const control = document.querySelector<HTMLButtonElement>('.solstice-control')!;
       const logo = document.querySelector<HTMLImageElement>('.solstice-logo')!;
+      const artwork = document.querySelector<HTMLElement>('.solstice-art')!;
       const reset = document.querySelector<HTMLButtonElement>('.solstice-reset')!;
       let yaw = 0;
       let pitch = 0;
@@ -749,8 +757,8 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
       const render = () => {
         pitch = Math.max(-50, Math.min(50, pitch));
         yaw %= 360;
-        logo.style.setProperty('--pitch', `${pitch}deg`);
-        logo.style.setProperty('--yaw', `${yaw}deg`);
+        artwork.style.setProperty('--pitch', `${pitch}deg`);
+        artwork.style.setProperty('--yaw', `${yaw}deg`);
       };
       const stop = () => {
         const id = drag?.id;

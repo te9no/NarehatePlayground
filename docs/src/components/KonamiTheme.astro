@@ -33,6 +33,15 @@
   html[data-psychedelic] :is(.lead, .section-intro, .guide-description, .action p) { color: #f3eafa; }
   html[data-psychedelic] .nav { background: #170d2bf2; }
   html[data-psychedelic] .brand-mark { box-shadow: 0 0 25px #ff53de; }
+  html[data-psychedelic] .solstice-art::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(125deg, #ff526e, #ffcb52, #eeff60, #52ffb3, #55d9ff, #9c77ff, #ff65df, #ff526e);
+    mix-blend-mode: multiply;
+    animation: psychedelic-rainbow 12s linear infinite;
+  }
   html[data-psychedelic] .site-footer { padding-bottom: 7rem; }
   .psychedelic-controls[hidden] { display: none; }
   .psychedelic-controls {
@@ -67,8 +76,13 @@
     from { background-position: 0% 0%; }
     to { background-position: 100% 60%; }
   }
+  @keyframes psychedelic-rainbow {
+    from { filter: hue-rotate(0deg); }
+    to { filter: hue-rotate(360deg); }
+  }
   @media (prefers-reduced-motion: reduce) {
     html[data-psychedelic] body { animation: none; }
+    html[data-psychedelic] .solstice-art::after { animation: none; }
   }
 </style>
 
