@@ -1,0 +1,108 @@
+<div class="psychedelic-controls" hidden>
+  <span role="status">✳ PSYCHEDELIC MODE</span>
+  <button type="button">通常テーマへ（Esc）</button>
+</div>
+
+<style is:global>
+  html[data-psychedelic] body {
+    background:
+      repeating-radial-gradient(ellipse at 0% 10%, transparent 0 65px, #ff38dc44 70px 100px, transparent 110px 165px),
+      radial-gradient(ellipse at 90% 15%, #fa00aa99, transparent 60%),
+      radial-gradient(ellipse at 10% 80%, #00ffe588, transparent 55%),
+      linear-gradient(135deg, #290057, #100923 45%, #3c075d);
+    background-size: 140% 140%;
+    animation: psychedelic-drift 24s ease-in-out infinite alternate;
+  }
+  html[data-psychedelic] .hero h1 {
+    color: #fff39b;
+    text-shadow: 4px 4px 0 #e600ba, -4px -3px 0 #00e8db, 0 0 35px #fc3dca;
+  }
+  html[data-psychedelic] .section-title {
+    color: #fbff9b;
+    text-shadow: 3px 3px 0 #ad20ee, -2px -2px 0 #03d7d7;
+  }
+  html[data-psychedelic] :is(.action, .guide, .visual) {
+    border-color: #ed7aff;
+    box-shadow: 0 0 0 2px #5525a2, 0 0 28px #f92bbe55, inset 0 0 35px #a626e522;
+    background-color: #170d2b;
+  }
+  html[data-psychedelic] :is(.action, .guide) {
+    background-image: linear-gradient(125deg, #45205cdd, #100c26 65%, #063e46);
+  }
+  html[data-psychedelic] :is(.guide-tag, .kicker, .action > span) { color: #d8ff69; }
+  html[data-psychedelic] :is(.lead, .section-intro, .guide-description, .action p) { color: #f3eafa; }
+  html[data-psychedelic] .nav { background: #170d2bf2; }
+  html[data-psychedelic] .brand-mark { box-shadow: 0 0 25px #ff53de; }
+  html[data-psychedelic] .site-footer { padding-bottom: 7rem; }
+  .psychedelic-controls[hidden] { display: none; }
+  .psychedelic-controls {
+    position: fixed;
+    z-index: 100;
+    right: max(12px, env(safe-area-inset-right));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    max-width: calc(100vw - 24px);
+    padding: 10px 14px;
+    border: 1px solid #e8a7ff;
+    border-radius: 18px;
+    background: #170d2bf5;
+    color: #eeffa8;
+    box-shadow: 0 0 24px #db24d455;
+    font: 700 12px/1.5 sans-serif;
+  }
+  .psychedelic-controls button {
+    min-height: 44px;
+    border: 1px solid #8cf7ed;
+    border-radius: 12px;
+    padding: 8px 12px;
+    color: #fff;
+    background: #33214a;
+    cursor: pointer;
+    font: inherit;
+  }
+  @keyframes psychedelic-drift {
+    from { background-position: 0% 0%; }
+    to { background-position: 100% 60%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html[data-psychedelic] body { animation: none; }
+  }
+</style>
+
+<script>
+  const sequence = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  const controls = document.querySelector<HTMLElement>('.psychedelic-controls')!;
+  const exitButton = controls.querySelector('button')!;
+  let buffer: string[] = [];
+  let lastInput = 0;
+  const setTheme = (enabled: boolean) => {
+    document.documentElement.toggleAttribute('data-psychedelic', enabled);
+    controls.hidden = !enabled;
+  };
+  document.addEventListener('keydown', (event) => {
+    const target = event.target;
+    if (event.isComposing || event.repeat || event.ctrlKey || event.altKey || event.metaKey ||
+      (target instanceof HTMLElement && target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"])'))) {
+      buffer = [];
+      return;
+    }
+    if (event.key === 'Escape') { buffer = []; setTheme(false); return; }
+    const now = Date.now();
+    if (now - lastInput > 5000) buffer = [];
+    lastInput = now;
+    buffer.push(event.key.length === 1 ? event.key.toLowerCase() : event.key);
+    buffer = buffer.slice(-sequence.length);
+    if (sequence.every((key, index) => buffer[index] === key)) {
+      setTheme(!document.documentElement.hasAttribute('data-psychedelic'));
+      buffer = [];
+    }
+  });
+  exitButton.addEventListener('click', () => {
+    setTheme(false);
+    // Avoid leaving keyboard focus on a now-hidden control.
+    document.querySelector<HTMLAnchorElement>('.brand')?.focus({ preventScroll: true });
+  });
+</script>

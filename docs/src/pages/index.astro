@@ -1,6 +1,7 @@
 ﻿---
 import GoogleAnalytics from '../components/GoogleAnalytics.astro';
 import SocialMeta from '../components/SocialMeta.astro';
+import KonamiTheme from '../components/KonamiTheme.astro';
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
 const guideModules = import.meta.glob('../content/docs/guides/*.{md,mdx}', { eager: true });
 
@@ -620,6 +621,7 @@ const guideGroups = [
     </style>
   </head>
   <body>
+    <KonamiTheme />
     <canvas id="particle-field" aria-hidden="true"></canvas>
     <div class="noise" aria-hidden="true"></div>
     <div class="cursor-light" aria-hidden="true"></div>
