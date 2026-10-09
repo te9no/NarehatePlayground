@@ -648,11 +648,11 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
           </div>
         </div>
         <div class="visual">
-          <button class="solstice-control" type="button" aria-label="Solsticeくんを回す" aria-describedby="solstice-help">
+          <button class="solstice-control" type="button" aria-label="Solsticeくんを回す" aria-describedby="solstice-help" data-equinox-src={`${base}equinox.jpg`}>
             <img class="solstice-logo" src={`${base}Polaris.jpg`} alt="" draggable="false" />
           </button>
           <div class="solstice-tools">
-            <p id="solstice-help">ドラッグ・横スワイプで回転<br />矢印キーでも操作できます</p>
+            <p id="solstice-help">ドラッグ・横スワイプで回転<br /><span class="solstice-status" role="status">回し続けると…？（矢印キーも対応）</span></p>
             <button class="solstice-reset" type="button">元に戻す</button>
           </div>
         </div>
@@ -725,6 +725,24 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
       const reset = document.querySelector<HTMLButtonElement>('.solstice-reset')!;
       let yaw = 0;
       let pitch = 0;
+      let rotationDistance = 0;
+      let transformed = false;
+      const originalSrc = logo.src;
+      const equinoxSrc = control.dataset.equinoxSrc!;
+      const status = document.querySelector<HTMLElement>('.solstice-status')!;
+      // Load the supplied artwork before the surprise is triggered.
+      const equinoxImage = new Image();
+      equinoxImage.src = equinoxSrc;
+      const rotate = (degrees: number) => {
+        yaw += degrees;
+        rotationDistance += Math.abs(degrees);
+        if (!transformed && rotationDistance >= 360 * 3) {
+          transformed = true;
+          logo.src = equinoxSrc;
+          control.setAttribute('aria-label', 'Equinoxくんを回す');
+          status.textContent = 'Equinoxくんに変身！';
+        }
+      };
       let drag: { id: number; x: number; y: number } | null = null;
       const render = () => {
         pitch = Math.max(-50, Math.min(50, pitch));
@@ -738,6 +756,17 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
         control.removeAttribute('data-dragging');
         if (id !== undefined && control.hasPointerCapture(id)) control.releasePointerCapture(id);
       };
+      const restore = () => {
+        stop();
+        yaw = 0;
+        pitch = 0;
+        rotationDistance = 0;
+        transformed = false;
+        logo.src = originalSrc;
+        control.setAttribute('aria-label', 'Solsticeくんを回す');
+        status.textContent = '回し続けると…？（矢印キーも対応）';
+        render();
+      };
       control.addEventListener('pointerdown', (event) => {
         if (!event.isPrimary || event.button !== 0 || drag) return;
         drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
@@ -746,7 +775,7 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
       });
       control.addEventListener('pointermove', (event) => {
         if (!drag || drag.id !== event.pointerId) return;
-        yaw += (event.clientX - drag.x) * .7;
+        rotate((event.clientX - drag.x) * .7);
         // Keep vertical touch gestures available for scrolling the guides.
         if (event.pointerType !== 'touch') pitch -= (event.clientY - drag.y) * .4;
         drag.x = event.clientX;
@@ -759,18 +788,18 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
       control.addEventListener('keydown', (event) => {
         if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'Escape'].includes(event.key)) return;
         event.preventDefault();
-        if (event.key === 'ArrowLeft') yaw -= 15;
-        if (event.key === 'ArrowRight') yaw += 15;
+        if (event.key === 'ArrowLeft') rotate(-15);
+        if (event.key === 'ArrowRight') rotate(15);
         if (event.key === 'ArrowUp') pitch += 10;
         if (event.key === 'ArrowDown') pitch -= 10;
-        if (event.key === 'Home' || event.key === 'Escape') { stop(); yaw = 0; pitch = 0; }
+        if (event.key === 'Home' || event.key === 'Escape') restore();
         render();
       });
       // Native keyboard / assistive activation rotates without a drag.
       control.addEventListener('click', (event) => {
-        if (event.detail === 0) { yaw += 30; render(); }
+        if (event.detail === 0) { rotate(30); render(); }
       });
-      reset.addEventListener('click', () => { stop(); yaw = 0; pitch = 0; render(); });
+      reset.addEventListener('click', restore);
       window.addEventListener('blur', stop);
     </script>
     <script is:inline>
