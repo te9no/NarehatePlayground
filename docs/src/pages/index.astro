@@ -50,7 +50,7 @@ const guideGroups = [
     <link rel="icon" href={`${base}favicon.png`} type="image/png" />
     <SocialMeta title="Narehate Playground" description="Custom keyboard build guides and hardware experiments." />
     <GoogleAnalytics />
-    <style define:vars={{ heroImage: `url('${base}Polaris.jpg')` }}>
+    <style>
       :root {
         color-scheme: dark;
         --bg: #03040a;
@@ -355,13 +355,60 @@ const guideGroups = [
         min-height: min(58vh, 620px);
         border: 1px solid rgba(255, 255, 255, .16);
         border-radius: 42px;
-        overflow: hidden;
-        background:
-          linear-gradient(135deg, rgba(3, 4, 10, .2), rgba(3, 4, 10, .78)),
-          var(--heroImage) center / cover;
+        overflow: clip;
+        background: #03040a;
         box-shadow: 0 34px 120px rgba(0,0,0,.48), inset 0 0 90px rgba(77,232,255,.14);
-        transform: perspective(900px) rotateY(-6deg) rotateX(2deg);
-        animation: visual-breathe 6s ease-in-out infinite;
+      }
+
+      .solstice-control {
+        position: absolute;
+        inset: 0 0 48px;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        border: 0;
+        padding: 16px;
+        background: transparent;
+        cursor: grab;
+        touch-action: pan-y pinch-zoom;
+        user-select: none;
+        perspective: 800px;
+      }
+      .solstice-control[data-dragging] { cursor: grabbing; }
+      .solstice-control:focus-visible { outline: 2px solid #4de8ff; outline-offset: -6px; border-radius: 32px; }
+      .solstice-logo {
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+        object-fit: contain;
+        pointer-events: none;
+        mix-blend-mode: screen;
+        transform: rotateX(var(--pitch, 0deg)) rotateY(var(--yaw, 0deg));
+      }
+      .solstice-tools {
+        position: absolute;
+        inset: auto 16px 10px;
+        z-index: 2;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: .7rem;
+        color: #c5d2dc;
+      }
+      .solstice-tools p { margin: 0; }
+      .solstice-reset {
+        min-height: 44px;
+        padding: 0 12px;
+        border: 1px solid #627887;
+        border-radius: 12px;
+        background: #101822;
+        color: white;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .visual::before, .visual::after { animation: none; }
       }
 
       .visual::before,
@@ -522,7 +569,6 @@ const guideGroups = [
       @keyframes glitch-hot { 0%, 86%, 94%, 100% { opacity: 0; clip-path: inset(0); } 88% { opacity: .75; clip-path: inset(18% 0 58%); } 91% { opacity: .7; clip-path: inset(72% 0 0); } }
       @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
       @keyframes shine { 0%, 42% { transform: translateX(-42%); opacity: 0; } 55% { opacity: .75; } 72%, 100% { transform: translateX(42%); opacity: 0; } }
-      @keyframes visual-breathe { 50% { transform: perspective(900px) rotateY(-2deg) rotateX(0deg) translateY(-10px); } }
       @keyframes sweep { to { transform: translateX(16%) skewX(-8deg); } }
 
       @media (max-width: 920px) {
@@ -556,7 +602,7 @@ const guideGroups = [
         h1 { font-size: clamp(2.9rem, 14.5vw, 4.2rem); letter-spacing: -.1em; }
         h1 .title-sub { font-size: .5em; letter-spacing: .015em; }
         .lead { margin-top: 1rem; font-size: .9rem; line-height: 1.7; }
-        .visual { min-height: 0; aspect-ratio: 16 / 9; border-radius: 22px; }
+        .visual { min-height: 0; aspect-ratio: 4 / 3; border-radius: 22px; }
         .section-title { font-size: clamp(2.7rem, 15vw, 4rem); }
         .section-intro { margin-bottom: 2rem; font-size: .86rem; }
         .guide-group { margin-bottom: 2.8rem; }
@@ -601,7 +647,15 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
             <a class="action" href="#guides"><span>03 / BUILD</span><strong>組み立てる</strong><p>製品別の手順とファームウェア情報を探します。</p></a>
           </div>
         </div>
-        <div class="visual" aria-label="Geacon Solstice visual panel"></div>
+        <div class="visual">
+          <button class="solstice-control" type="button" aria-label="Solsticeくんを回す" aria-describedby="solstice-help">
+            <img class="solstice-logo" src={`${base}Polaris.jpg`} alt="" draggable="false" />
+          </button>
+          <div class="solstice-tools">
+            <p id="solstice-help">ドラッグ・横スワイプで回転<br />矢印キーでも操作できます</p>
+            <button class="solstice-reset" type="button">元に戻す</button>
+          </div>
+        </div>
       </section>
 
       <section id="guides">
@@ -665,6 +719,60 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
       </nav>
     </footer>
 
+    <script>
+      const control = document.querySelector<HTMLButtonElement>('.solstice-control')!;
+      const logo = document.querySelector<HTMLImageElement>('.solstice-logo')!;
+      const reset = document.querySelector<HTMLButtonElement>('.solstice-reset')!;
+      let yaw = 0;
+      let pitch = 0;
+      let drag: { id: number; x: number; y: number } | null = null;
+      const render = () => {
+        pitch = Math.max(-50, Math.min(50, pitch));
+        yaw %= 360;
+        logo.style.setProperty('--pitch', `${pitch}deg`);
+        logo.style.setProperty('--yaw', `${yaw}deg`);
+      };
+      const stop = () => {
+        const id = drag?.id;
+        drag = null;
+        control.removeAttribute('data-dragging');
+        if (id !== undefined && control.hasPointerCapture(id)) control.releasePointerCapture(id);
+      };
+      control.addEventListener('pointerdown', (event) => {
+        if (!event.isPrimary || event.button !== 0 || drag) return;
+        drag = { id: event.pointerId, x: event.clientX, y: event.clientY };
+        control.setPointerCapture(event.pointerId);
+        control.setAttribute('data-dragging', '');
+      });
+      control.addEventListener('pointermove', (event) => {
+        if (!drag || drag.id !== event.pointerId) return;
+        yaw += (event.clientX - drag.x) * .7;
+        // Keep vertical touch gestures available for scrolling the guides.
+        if (event.pointerType !== 'touch') pitch -= (event.clientY - drag.y) * .4;
+        drag.x = event.clientX;
+        drag.y = event.clientY;
+        render();
+      });
+      for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) {
+        control.addEventListener(name, stop);
+      }
+      control.addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'Escape'].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === 'ArrowLeft') yaw -= 15;
+        if (event.key === 'ArrowRight') yaw += 15;
+        if (event.key === 'ArrowUp') pitch += 10;
+        if (event.key === 'ArrowDown') pitch -= 10;
+        if (event.key === 'Home' || event.key === 'Escape') { stop(); yaw = 0; pitch = 0; }
+        render();
+      });
+      // Native keyboard / assistive activation rotates without a drag.
+      control.addEventListener('click', (event) => {
+        if (event.detail === 0) { yaw += 30; render(); }
+      });
+      reset.addEventListener('click', () => { stop(); yaw = 0; pitch = 0; render(); });
+      window.addEventListener('blur', stop);
+    </script>
     <script is:inline>
       const canvas = document.getElementById('particle-field');
       const ctx = canvas.getContext('2d');
