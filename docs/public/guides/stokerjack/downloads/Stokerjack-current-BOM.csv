@@ -1,0 +1,25 @@
+﻿実装,部品・値,型式・仕様,購入コード,60キー数量,58キー数量,60キー参照番号,58キー参照番号,購入先URL,備考
+PCBA,1uF 50V X7R,CL21B105KBFNNNE,C28323,6,6,"C3, C5, C8, C9, C10, C11","C3, C5, C8, C9, C10, C11",https://www.lcsc.com/product-detail/C28323.html,
+PCBA,4.7uF 16V X7R,CL21B475KOFNNNE,C107365,3,3,"C4, C6, C7","C4, C6, C7",https://www.lcsc.com/product-detail/C107365.html,
+PCBA,RSX101VAM30TR,RSX101VAM30TR,C510007,1,1,D61,D61,https://www.lcsc.com/product-detail/C510007.html,
+PCBA,AO3401A,AO3401A,C15127,1,1,Q1,Q1,https://www.lcsc.com/product-detail/C15127.html,
+PCBA,DMP2035U-7,DMP2035U-7,C110499,1,1,Q2,Q2,https://www.lcsc.com/product-detail/C110499.html,
+PCBA,180k 1%,0805W8F1803T5E,C17501,1,1,R3,R3,https://www.lcsc.com/product-detail/C17501.html,
+PCBA,100k 1%,0805W8F1003T5E,C149504,2,2,"R4, R5","R4, R5",https://www.lcsc.com/product-detail/C149504.html,
+PCBA,AP2112K-3.3TRG1,AP2112K-3.3TRG1,C51118,1,1,U2,U2,https://www.lcsc.com/product-detail/C51118.html,
+PCBA,TPS2116DRLR,TPS2116DRLR,C3235557,1,1,U3,U3,https://www.lcsc.com/product-detail/C3235557.html,
+PCBA,TZ-5050S2RGB-5V-I4-H1,TZ-5050S2RGB-5V-I4-H1,C26167850,4,4,"U4, U5, U6, U7","U4, U5, U6, U7",https://www.lcsc.com/product-detail/C26167850.html,現行SMD LED。秋月リードLEDへの置換は未実施
+HAND,MY-AA-07,MY-AA-07,C2979180,4,4,"BC1, BC2, BC3, BC4","BC1, BC2, BC3, BC4",https://www.lcsc.com/product-detail/C2979180.html,端子4個で単3×2本。金具同士の接触履歴あり。新配置の実物確認必須
+HAND,4.7uF VDD,4.7uF VDD,,1,1,C1,C1,,リード型P2.5mm。具体型番・耐圧・本体寸法は未確定。旧手配表参照
+HAND,1uF VBUS,1uF VBUS,,1,1,C2,C2,,リード型P2.5mm。具体型番・耐圧・本体寸法は未確定。旧手配表参照
+HAND,1N4148,1N4148,,60,60,"D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, D29, D30, D31, D32, D33, D34, D35, D36, D37, D38, D39, D40, D41, D42, D43, D44, D45, D46, D47, D48, D49, D50, D51, D52, D53, D54, D55, D56, D57, D58, D59, D60","D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, D13, D14, D15, D16, D17, D18, D19, D20, D21, D22, D23, D24, D25, D26, D27, D28, D29, D30, D31, D32, D33, D34, D35, D36, D37, D38, D39, D40, D41, D42, D43, D44, D45, D46, D47, D48, D49, D50, D51, D52, D53, D54, D55, D56, D57, D58, D59, D60",,
+HAND,TYPE-C-31-M-12,TYPE-C-31-M-12,C165948,1,1,J1,J1,https://www.lcsc.com/product-detail/C165948.html,
+HAND,POLARIS DIRECT SOLDER,GeaconPolaris Bat direct pads,,1,1,J3 POLARIS,J3 POLARIS,,組立済み昇圧子基板。裏面にパッド直接はんだ。子基板の内部BOMは含まない
+HAND,MX + Kailh socket,CPG151101S11,,60,58,"MX1, MX2, MX3, MX4, MX5, MX6, MX7, MX8, MX9, MX10, MX11, MX12, MX13, MX14, MX15, MX16, MX17, MX18, MX19, MX20, MX21, MX22, MX23, MX24, MX25, MX26, MX27, MX28, MX29, MX30, MX31, MX32, MX33, MX34, MX35, MX36, MX37, MX38, MX39, MX40, MX41, MX42, MX43, MX44, MX45, MX46, MX47, MX48, MX49, MX50, MX51, MX52, MX53, MX54, MX55, MX56, MX57, MX58, MX59, MX60","2u_MX30, 2u_MX60, MX1, MX2, MX3, MX4, MX5, MX6, MX7, MX8, MX9, MX10, MX11, MX12, MX13, MX14, MX15, MX16, MX17, MX18, MX19, MX20, MX21, MX22, MX23, MX25, MX26, MX27, MX28, MX29, MX31, MX32, MX33, MX34, MX35, MX36, MX37, MX38, MX39, MX40, MX41, MX42, MX43, MX44, MX45, MX46, MX47, MX48, MX49, MX50, MX51, MX52, MX53, MX55, MX56, MX57, MX58, MX59",,ソケットのみ。スイッチとキーキャップは別途購入。MX専用
+HAND,5.1k ohm axial; pitch 7.62mm,5.1k ohm axial; pitch 7.62mm,,2,2,"R1, R2","R1, R2",,
+HAND,100 1% THT,Axial 1/4W 1% D<=2.5mm L<=6.5mm,,2,2,"R6, R8","R6, R8",,1/4W 1%; 直径<=2.5mm・本体長<=6.5mm; 縦実装P2.54mm・高さ<=8.5mm; 折返しリード絶縁; メーカー未選定
+HAND,100k 1% THT,Axial 1/4W 1% D<=2.5mm L<=6.5mm,,2,2,"R7, R9","R7, R9",,1/4W 1%; 直径<=2.5mm・本体長<=6.5mm; 縦実装P2.54mm・高さ<=8.5mm; 折返しリード絶縁; メーカー未選定
+HAND,1k 1% THT,Axial 1/4W 1% D<=2.5mm L<=6.5mm,,1,1,R10,R10,,1/4W 1%; 直径<=2.5mm・本体長<=6.5mm; 縦実装P2.54mm・高さ<=8.5mm; 折返しリード絶縁; メーカー未選定
+HAND,RESET,RESET,,1,1,SW1,SW1,,6mm角リード型。正確な型式・足寸法の最終照合が必要
+HAND,SS-12F16G6,SS-12F16G6,115705,1,1,SW2,SW2,https://akizukidenshi.com/catalog/g/g115705/,
+HAND,MDBT50Q-1MV2,MDBT50Q-1MV2,,1,1,U1,U1,,手はんだモジュール。採用品の技適・型式を確認

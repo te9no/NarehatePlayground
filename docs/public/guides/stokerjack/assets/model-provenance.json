@@ -1,0 +1,17 @@
+{
+  "source": "EasyEDA pcb_ManufactureData.get3DFile",
+  "document": "cf18d4b006f74c7a8f1591a44bb82f54",
+  "project": "Stokerjack THT hybrid 20261015 REVIEW",
+  "options": {
+    "fileType": "obj",
+    "element": [
+      "Component Model",
+      "Silkscreen"
+    ],
+    "modelMode": "Parts",
+    "autoGenerateModels": false
+  },
+  "vertices": 138307,
+  "triangles": 193340,
+  "note": "Missing component models are not synthesized. Static PNGs rendered from exported OBJ/MTL. PCB material mtl18 recolored blue for legibility; geometry unchanged."
+}

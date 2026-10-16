@@ -1,0 +1,28 @@
+Stokerjack status LED firmware — 2026-10-14
+
+This public package contains only the 60-key UF2 and the Stokerjack bootloader. Requires installed Stokerjack UF2 bootloader.
+Double-tap RESET within 500 ms, copy the corresponding UF2 to STOKERJACK drive.
+The 60-key file was installed and USB HID re-enumeration confirmed.
+
+Animation, approximately 2.4 seconds:
+0–0.4 s: four-pixel chase in selected BLE profile color.
+0.4–0.6 s: connection confirmation (USB cyan, BLE green, disconnected amber).
+0.6–1.4 s: four-step battery gauge; <=20% flashes red; unavailable reading shows dim blue.
+1.4–2.4 s: connection / BLE profile / layer / Caps Lock status, fading to black.
+BLE profiles 1–5: blue, cyan, green, amber, magenta.
+Layers Def/Fnc/Num/BT: blue, cyan, green, amber. Caps Lock: magenta.
+
+Triggers: LED behavior key, layer change, Caps Lock/host indicator change, endpoint/profile changes, wake.
+Ordinary keypresses trigger at most once every 30 seconds. Battery updates alone do not light LEDs.
+LED behavior is now a one-shot status animation rather than persistent ON/OFF.
+Brightness capped at 16/255. After the animation, a black frame is sent, DIN is held LOW, and P1.09 switches LED power OFF.
+Battery percentage retains the existing two-cell NiMH configuration; physical calibration is not newly validated.
+
+Validation: both layouts compile; UF2 family/block/range checks pass; pure C renderer tests cover invalid/empty/full battery, brightness bound, Caps Lock, terminal blackout.
+Visual colors and LED ordering require user observation; physical LED order follows existing data-chain order.
+
+Bootloader repaired for Stokerjack. Device backups are not distributed.
+Installed/verified bootloader HEX; USB mass storage enumerated; user double-reset confirmed drive return; normal UF2 boot confirmed.
+Do not flash old address-zero SWD application HEX over this bootloader.
+
+Public status 2026-10-16: 60-key SWD write/verify, application startup and USB HID recognition confirmed. Full key/assembly/mechanical validation of the next THT hybrid PCB is not complete.

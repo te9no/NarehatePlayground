@@ -29,6 +29,12 @@ const guideCards = Object.entries(guideModules)
   .sort((a, b) => a.href.localeCompare(b.href))
   .map((guide, index) => ({ ...guide, index: String(index + 1).padStart(2, '0') }));
 
+guideCards.push({
+  href: `${base}guides/stokerjack/`, title: 'Stokerjack 組み立てガイド', slug: 'stokerjack',
+  group: 'keyboard', tag: '60キー / THT hybrid / 製造確定前',
+  description: '文章と動く3Dで確認する組み立て手順。対象は2026-10-15版。未検証事項を含むレビュー資料です。', index: '',
+});
+
 const guideGroups = [
   { id: 'keyboard', title: 'キーボード本体', description: '配列やポインティングデバイスの違いから、作りたい一台を探せます。' },
   { id: 'module', title: 'モジュール・設定', description: '追加デバイス、補助入力、ファームウェアの手順です。' },
