@@ -18,6 +18,7 @@ const guideInfo = {
   '31geacon': { group: 'archive', tag: 'GRIN / 一体型', description: 'JIS・US配列と34mmトラックボールを備えたGeaconの記録。' },
   '32geaconsolstice': { group: 'archive', tag: 'GRIN / 分割', description: 'Geaconを分割型に展開したモデルの組み立て記録。' },
   '90firmwareguide': { group: 'module', tag: 'ZMK / ファームウェア', description: 'ファームウェアの選び方、書き込み、更新時の基本手順。' },
+  '91repositories': { group: 'module', tag: 'GitHub / 公開ソース', description: 'メンテナンス対象の製品・ツールのリポジトリと、関連資料のリンク集。' },
 };
 
 const guideCards = Object.entries(guideModules)
@@ -725,6 +726,7 @@ PLAYGROUND`}><span>NAREHATE</span><span class="title-sub">PLAYGROUND</span></h1>
     <footer class="shell site-footer">
       <span>Narehate Playground / Custom keyboard build guides</span>
       <nav aria-label="External links">
+        <a href={`${base}guides/91repositories/`}>リポジトリ一覧</a>
         <a href="https://klemodern.netlify.app/">Forma</a>
         <a href="https://github.com/te9no/ZMKHelperAndroid">ZMK Helper Android</a>
         <a href="https://te9no.github.io/zmk-shield-fleet/">ZMK Shield Fleet</a>
