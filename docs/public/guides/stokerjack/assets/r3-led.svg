@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="133.23 134.80 39.65 15.80" width="476" height="190"><title>R3 基板表面・LED周辺。赤丸が各部品のパッド1</title><rect x="133.23" y="134.80" width="100%" height="100%" rx="1" fill="#f2f6f5"/>
+<circle cx="152.40" cy="138.80" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="152.40" cy="140.80" r=".50" fill="#ae4424" stroke="#21404a" stroke-width=".13"/>
+<text transform="translate(152.40 138.50) rotate(0)" y=".35" text-anchor="middle" font-family="sans-serif" font-size="1.15" font-weight="bold" fill="#152f39" stroke="#f2f6f5" stroke-width=".45" paint-order="stroke">R11</text>
+<circle cx="151.63" cy="144.30" r=".50" fill="#ae4424" stroke="#21404a" stroke-width=".13"/>
+<circle cx="154.17" cy="144.30" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<text transform="translate(152.90 143.30) rotate(0)" y=".35" text-anchor="middle" font-family="sans-serif" font-size="1.15" font-weight="bold" fill="#152f39" stroke="#f2f6f5" stroke-width=".45" paint-order="stroke">R12</text>
+<circle cx="137.23" cy="145.40" r=".50" fill="#ae4424" stroke="#21404a" stroke-width=".13"/>
+<circle cx="138.48" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="139.73" cy="145.40" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="140.98" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<text transform="translate(139.10 144.70) rotate(0)" y=".35" text-anchor="middle" font-family="sans-serif" font-size="1.15" font-weight="bold" fill="#152f39" stroke="#f2f6f5" stroke-width=".45" paint-order="stroke">U4</text>
+<circle cx="143.73" cy="145.40" r=".50" fill="#ae4424" stroke="#21404a" stroke-width=".13"/>
+<circle cx="144.98" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="146.23" cy="145.40" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="147.48" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<text transform="translate(145.60 144.70) rotate(0)" y=".35" text-anchor="middle" font-family="sans-serif" font-size="1.15" font-weight="bold" fill="#152f39" stroke="#f2f6f5" stroke-width=".45" paint-order="stroke">U5</text>
+<circle cx="158.62" cy="145.40" r=".50" fill="#ae4424" stroke="#21404a" stroke-width=".13"/>
+<circle cx="159.87" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="161.12" cy="145.40" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="162.37" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<text transform="translate(160.50 144.70) rotate(0)" y=".35" text-anchor="middle" font-family="sans-serif" font-size="1.15" font-weight="bold" fill="#152f39" stroke="#f2f6f5" stroke-width=".45" paint-order="stroke">U6</text>
+<circle cx="165.12" cy="145.40" r=".50" fill="#ae4424" stroke="#21404a" stroke-width=".13"/>
+<circle cx="166.37" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="167.62" cy="145.40" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<circle cx="168.87" cy="146.60" r=".50" fill="#fff" stroke="#21404a" stroke-width=".13"/>
+<text transform="translate(167.00 144.70) rotate(0)" y=".35" text-anchor="middle" font-family="sans-serif" font-size="1.15" font-weight="bold" fill="#152f39" stroke="#f2f6f5" stroke-width=".45" paint-order="stroke">U7</text>
+</svg>
