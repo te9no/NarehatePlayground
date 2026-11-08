@@ -120,6 +120,18 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
         object-fit: contain;
       }
       :global(p), :global(li) { color: var(--muted); line-height: 1.85; }
+      /* Keep supplied portrait photographs intact; rotate their display without cropping. */
+      :global(.landscape-photo) { position: relative; aspect-ratio: 4 / 3; margin: 1.5rem 0; }
+      :global(.landscape-photo img) {
+        position: absolute; width: 75%; height: 133.333333%; max-width: none;
+        left: 12.5%; top: -16.666667%; transform: rotate(-90deg);
+      }
+      .image-dialog.is-landscape { width: min(calc(100vw - 24px), calc((100dvh - 100px) * 4 / 3), 1280px); }
+      .image-dialog.is-landscape .image-frame { position: relative; aspect-ratio: 4 / 3; }
+      .image-dialog.is-landscape img {
+        position: absolute; width: 75%; height: 133.333333%; max-width: none; max-height: none;
+        left: 12.5%; top: -16.666667%; transform: rotate(-90deg); border-radius: 0;
+      }
       :global(code) { color: var(--cyan); }
       :global(table) { display: block; overflow-x: auto; border-collapse: collapse; }
       :global(th), :global(td) { border: 1px solid var(--line); padding: .5rem .75rem; }
@@ -225,7 +237,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
       </main>
     </div>
     <dialog class="image-dialog" aria-label="Expanded image">
-      <img alt="" />
+      <div class="image-frame"><img alt="" /></div>
       <button type="button">Close</button>
     </dialog>
     <script is:inline>
@@ -238,6 +250,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
           if (!dialog || !dialogImage) return;
           dialogImage.src = image.currentSrc || image.src;
           dialogImage.alt = image.alt || '';
+          dialog.classList.toggle('is-landscape', Boolean(image.closest('.landscape-photo')));
           if (typeof dialog.showModal === 'function') {
             dialog.showModal();
           }
