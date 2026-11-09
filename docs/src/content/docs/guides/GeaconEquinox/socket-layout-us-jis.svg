@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="-50 -110 1950 1590"
+     role="img" aria-labelledby="title desc">
+  <title id="title">GeaconEquinox US/JIS 実装位置の比較</title>
+  <desc id="desc">
+    キー領域はphysical layoutの座標と回転を使用。
+    パッドや基板外形の図ではない。
+    S1からS3はスタビライザー候補を対応キーに示した記号で、穴座標ではない。
+    ダイヤルとトラックボールは座標未定義のため欄外表示。
+  </desc>
+  <metadata>
+    Repository commit: 5d3903aa0dda24a6523f7d7e479e014cbb075db8
+    snippets/equinox-us/equinox-us.overlay: layout_US
+    snippets/equinox-jis/equinox-jis.overlay: layout_JIS
+    EasyEDA GeaconEquinox v0.2: GeaconSolstice_L / GeaconSolstice_R
+  </metadata>
+
+  <style>
+    text{font-family:sans-serif;fill:#172033;font-size:26px}
+    .keys{fill:#eef2f6;stroke:#64748b;stroke-width:2}
+    .changed{fill:#ffedd5;stroke:#c2410c;stroke-width:3}
+    .binding{fill:#ede9fe;stroke:#7c3aed}
+    .unused{fill:url(#hatch);stroke:#be123c;stroke-width:3;stroke-dasharray:8 5}
+    .tag{font-size:24px;font-weight:bold;text-anchor:middle}
+    .stab{fill:#047857;font-weight:bold}
+    .note{font-size:23px}
+  </style>
+
+  <defs>
+    <rect id="k100" width="100" height="100"/>
+    <rect id="k125" width="125" height="100"/>
+    <rect id="k150" width="150" height="100"/>
+    <rect id="k175" width="175" height="100"/>
+    <rect id="k225" width="225" height="100"/>
+    <pattern id="hatch" width="16" height="16"
+             patternUnits="userSpaceOnUse">
+      <path d="M-4 4L4-4M0 16L16 0M12 20L20 12"
+            stroke="#fb7185" stroke-width="3"/>
+    </pattern>
+
+    <!-- US/JIS共通の60キー。座標・寸法・回転中心は原定義を保持。 -->
+    <g id="common" class="keys">
+      <use href="#k100" x="0" y="0"><title>RC(0,6)</title></use>
+      <use href="#k100" x="100" y="0"><title>RC(1,6)</title></use>
+      <use href="#k100" x="201" y="2" transform="rotate(3.75 251 52)"><title>RC(2,6)</title></use>
+      <use href="#k100" x="301" y="13" transform="rotate(8.75 351 63)"><title>RC(3,6)</title></use>
+      <use href="#k100" x="400" y="33" transform="rotate(11.25 450 83)"><title>RC(4,6)</title></use>
+      <use href="#k100" x="499" y="48" transform="rotate(6.25 549 98)"><title>RC(5,6)</title></use>
+      <use href="#k100" x="900" y="54" transform="rotate(1.25 950 104)"><title>RC(0,14)</title></use>
+      <use href="#k100" x="1001" y="52" transform="rotate(-3.75 1051 102)"><title>RC(1,14)</title></use>
+      <use href="#k100" x="1101" y="41" transform="rotate(-8.75 1151 91)"><title>RC(2,14)</title></use>
+      <use href="#k100" x="1200" y="22" transform="rotate(-11.25 1250 72)"><title>RC(3,14)</title></use>
+      <use href="#k100" x="1299" y="7" transform="rotate(-6.25 1349 57)"><title>RC(4,14)</title></use>
+      <use href="#k100" x="1400" y="0" transform="rotate(-1.25 1450 50)"><title>RC(5,14)</title></use>
+      <use href="#k100" x="1500" y="0"><title>RC(0,13)</title></use>
+
+      <use href="#k150" x="0" y="100"><title>RC(0,5)</title></use>
+      <use href="#k100" x="150" y="100" transform="rotate(1.25 200 150)"><title>RC(1,5)</title></use>
+      <use href="#k100" x="251" y="107" transform="rotate(6.25 301 157)"><title>RC(2,5)</title></use>
+      <use href="#k100" x="350" y="122" transform="rotate(11.25 400 172)"><title>RC(3,5)</title></use>
+      <use href="#k100" x="449" y="141" transform="rotate(8.75 499 191)"><title>RC(4,5)</title></use>
+      <use href="#k100" x="549" y="152" transform="rotate(3.75 599 202)"><title>RC(6,5)</title></use>
+      <use href="#k100" x="950" y="154" transform="rotate(-1.25 1000 204)"><title>RC(3,13)</title></use>
+      <use href="#k100" x="1051" y="148" transform="rotate(-6.25 1101 198)"><title>RC(4,13)</title></use>
+      <use href="#k100" x="1150" y="133" transform="rotate(-11.25 1200 183)"><title>RC(6,13)</title></use>
+      <use href="#k100" x="1249" y="113" transform="rotate(-8.75 1299 163)"><title>RC(0,12)</title></use>
+      <use href="#k100" x="1349" y="102" transform="rotate(-3.75 1399 152)"><title>RC(1,12)</title></use>
+      <use href="#k100" x="1450" y="100"><title>RC(2,12)</title></use>
+      <use href="#k100" x="1550" y="100"><title>RC(3,12)</title></use>
+
+      <use href="#k175" x="0" y="200"><title>RC(0,4)</title></use>
+      <use href="#k100" x="175" y="201" transform="rotate(2.5 225 251)"><title>RC(1,4)</title></use>
+      <use href="#k100" x="276" y="210" transform="rotate(7.5 326 260)"><title>RC(2,4)</title></use>
+      <use href="#k100" x="375" y="227" transform="rotate(12.5 425 277)"><title>RC(3,4)</title></use>
+      <use href="#k100" x="474" y="245" transform="rotate(7.5 524 295)"><title>RC(5,4)</title></use>
+      <use href="#k100" x="575" y="254" transform="rotate(2.5 625 304)"><title>RC(6,4)</title></use>
+      <use href="#k100" x="975" y="254" transform="rotate(-2.5 1025 304)"><title>RC(6,12)</title></use>
+      <use href="#k100" x="1076" y="245" transform="rotate(-7.5 1126 295)"><title>RC(0,11)</title></use>
+      <use href="#k100" x="1175" y="227" transform="rotate(-12.5 1225 277)"><title>RC(1,11)</title></use>
+      <use href="#k100" x="1274" y="210" transform="rotate(-7.5 1324 260)"><title>RC(2,11)</title></use>
+      <use href="#k100" x="1375" y="201" transform="rotate(-2.5 1425 251)"><title>RC(4,11)</title></use>
+      <use href="#k100" x="1475" y="200"><title>RC(5,11)</title></use>
+
+      <use href="#k225" x="0" y="300"><title>RC(0,3)</title></use>
+      <use href="#k100" x="226" y="304" transform="rotate(5 276 354)"><title>RC(1,3)</title></use>
+      <use href="#k100" x="326" y="318" transform="rotate(10 376 368)"><title>RC(2,3)</title></use>
+      <use href="#k100" x="424" y="337" transform="rotate(10 474 387)"><title>RC(4,3)</title></use>
+      <use href="#k100" x="524" y="350" transform="rotate(5 574 400)"><title>RC(5,3)</title></use>
+      <use href="#k100" x="625" y="355"><title>RC(6,3)</title></use>
+      <use href="#k100" x="1026" y="350" transform="rotate(-5 1076 400)"><title>RC(0,10)</title></use>
+      <use href="#k100" x="1126" y="337" transform="rotate(-10 1176 387)"><title>RC(1,10)</title></use>
+      <use href="#k100" x="1224" y="318" transform="rotate(-10 1274 368)"><title>RC(3,10)</title></use>
+      <use href="#k100" x="1324" y="304" transform="rotate(-5 1374 354)"><title>RC(4,10)</title></use>
+      <use href="#k100" x="1425" y="300"><title>RC(5,10)</title></use>
+      <use href="#k100" x="1525" y="300" class="binding"><title>RC(6,10)</title></use>
+      <use href="#k100" x="1650" y="325"><title>RC(0,9)</title></use>
+
+      <use href="#k125" x="0" y="400"><title>RC(0,2)</title></use>
+      <use href="#k125" x="125" y="400"><title>RC(1,2)</title></use>
+      <use href="#k125" x="253" y="409" transform="rotate(7 316 459)"><title>RC(3,2)</title></use>
+      <use href="#k100" x="325" y="445" transform="rotate(11.95 457 785)"><title>RC(4,2)</title></use>
+      <use href="#k175" x="473" y="455" transform="rotate(4.45 585 801)"><title>RC(5,2)</title></use>
+      <use href="#k100" x="1002" y="455" transform="rotate(-4.45 1065 801)"><title>RC(2,9)</title></use>
+      <use href="#k100" x="1550" y="425"><title>RC(3,9)</title></use>
+      <use href="#k100" x="1650" y="425"><title>RC(4,9)</title></use>
+      <use href="#k100" x="1750" y="425"><title>RC(5,9)</title></use>
+    </g>
+
+    <g id="common-labels">
+      <text x="112.5" y="360" class="tag stab">S1</text>
+      <text x="1575" y="360" class="tag">D</text>
+    </g>
+  </defs>
+
+  <rect x="-50" y="-110" width="1950" height="1590" fill="white"/>
+
+  <text x="0" y="-65" font-weight="bold">
+    US：左29・右34 ／ キー上面視（ソケットは裏面）
+  </text>
+  <text x="0" y="-25" class="note">左手</text>
+  <text x="900" y="-25" class="note">右手</text>
+
+  <use href="#common"/>
+  <use href="#common-labels"/>
+  <g class="changed">
+    <rect x="1600" y="0" width="200" height="100">
+      <title>A RC(1,13) SW37A</title>
+    </rect>
+    <rect x="1650" y="100" width="150" height="100">
+      <title>B RC(5,12) SW46</title>
+    </rect>
+    <rect x="1575" y="200" width="225" height="100">
+      <title>C RC(6,11) SW53A</title>
+    </rect>
+  </g>
+  <rect x="1700" y="0" width="100" height="100" class="unused">
+    <title>X: JIS RC(2,13)の領域。USでは独立キーなし</title>
+  </rect>
+  <text x="1650" y="42" class="tag">A</text>
+  <text x="1750" y="42" class="tag">X</text>
+  <text x="1700" y="82" class="tag stab">S2</text>
+  <text x="1725" y="160" class="tag">B</text>
+  <text x="1687.5" y="260" class="tag">C</text>
+  <text x="0" y="610" class="note">
+    X＝RC(2,13)は未使用。斜線はUS Backspaceが覆うJISキー領域。
+  </text>
+
+  <!-- 表示用の平行移動のみ。内部のphysical layout座標はUSと同じ原点。 -->
+  <g transform="translate(0 750)">
+    <text x="0" y="-65" font-weight="bold">
+      JIS：左29・右35 ／ 左手はUSと共通
+    </text>
+    <use href="#common"/>
+    <use href="#common-labels"/>
+    <g class="changed">
+      <rect x="1600" y="0" width="100" height="100">
+        <title>A RC(1,13) SW37</title>
+      </rect>
+      <rect x="1700" y="0" width="100" height="100">
+        <title>X RC(2,13) SW38</title>
+      </rect>
+      <rect x="1650" y="100" width="150" height="200">
+        <title>B RC(5,12) SW46A。矩形はdevicetreeの定義</title>
+      </rect>
+      <rect x="1575" y="200" width="100" height="100">
+        <title>C RC(6,11) SW53</title>
+      </rect>
+    </g>
+    <text x="1650" y="55" class="tag">A</text>
+    <text x="1750" y="55" class="tag">X</text>
+    <text x="1725" y="165" class="tag">B</text>
+    <text x="1725" y="225" class="tag stab">S3</text>
+    <text x="1625" y="260" class="tag">C</text>
+  </g>
+
+  <text x="0" y="1355" class="note">
+    橙 A–C・X：形状／使用位置差。紫 D：割当のみ差。緑 S1–S3：取付候補（穴座標ではない）。
+  </text>
+  <text x="0" y="1395" class="note">
+    ◉ 左ダイヤル ／ ◉ 右トラックボール：devicetreeに座標なし。欄外記号であり位置を示さない。
+  </text>
+  <text x="0" y="1435" class="note">
+    矩形・回転は原定義を保持。JIS Enterの矩形重なりも原定義どおり。基板外形・穴・パッドは未描画。
+  </text>
+</svg>
